@@ -179,7 +179,7 @@ const SignIn = () => {
               <p className="text-gray-300 text-sm lg:text-base">
                 Don't have an account?{" "}
                 <Link
-                  href="/register"
+                  href="/signup"
                   className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-all duration-200"
                 >
                   Create one here
