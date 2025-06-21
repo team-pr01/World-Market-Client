@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
     return (
-        <div>
+        <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
             <Navbar />
             {children}
             <Footer />
