@@ -3,9 +3,9 @@ import { baseApi } from "../../Api/baseApi";
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     
-    sendOtp: builder.mutation({
+    signup: builder.mutation({
       query: (userInfo) => ({
-        url: "/send-otp",
+        url: "/auth/register",
         method: "POST",
         body: userInfo,
         credentials: "include",
@@ -13,9 +13,9 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["user"],
     }),
 
-    setupProfile: builder.mutation({
+    signin: builder.mutation({
       query: (userInfo) => ({
-        url: "/register",
+        url: "/auth/login",
         method: "POST",
         body: userInfo,
         credentials: "include",
@@ -23,54 +23,33 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["user"],
     }),
 
-    verifyOtp: builder.mutation({
-      query: (verifyOtpData) => ({
-        url: "/verify-otp",
+    forgotPassword: builder.mutation({
+      query: (forgotPasswordData) => ({
+        url: "/auth/forgot-password",
         method: "POST",
-        body: verifyOtpData,
+        body: forgotPasswordData,
         credentials: "include",
       }),
       invalidatesTags: ["user"],
     }),
 
-    logoutUser: builder.query({
-      query: () => ({
-        method: "PUT",
-        url: `/logout`,
+    resetPassword: builder.mutation({
+      query: ({resetPasswordData, token}) => ({
+        url: `/auth/reset-password/${token}`,
+        method: "POST",
+        body: resetPasswordData,
         credentials: "include",
       }),
-      providesTags: ["user"],
+      invalidatesTags: ["user"],
     }),
-
-    // forgotPassword: builder.mutation({
-    //   query: (forgotPasswordData) => ({
-    //     url: "/auth/forgot-password",
-    //     method: "POST",
-    //     body: forgotPasswordData,
-    //     credentials: "include",
-    //   }),
-    //   invalidatesTags: ["user"],
-    // }),
-
-    // resetPassword: builder.mutation({
-    //   query: ({resetPasswordData, token}) => ({
-    //     url: `/auth/reset-password/${token}`,
-    //     method: "POST",
-    //     body: resetPasswordData,
-    //     credentials: "include",
-    //   }),
-    //   invalidatesTags: ["user"],
-    // }),
 
 
   }),
 });
 
 export const {
-  useSendOtpMutation,
-  useSetupProfileMutation,
-  useVerifyOtpMutation,
-  useLogoutUserQuery,
-  // useForgotPasswordMutation,
-  // useResetPasswordMutation
+  useSignupMutation,
+  useSigninMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation
 } = authApi;

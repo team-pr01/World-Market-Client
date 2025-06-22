@@ -2,33 +2,27 @@
 "use client";
 /* eslint-disable react/no-unescaped-entities */
 import { Button } from "@/components/reusable/Button/Button";
-import { useSigninMutation } from "@/redux/Features/Auth/authApi";
+import { useForgotPasswordMutation } from "@/redux/Features/Auth/authApi";
 import {
   AlertCircle,
   ArrowRight,
   CheckCircle,
-  Eye,
-  EyeOff,
-  Lock,
+  Mail,
   User,
-  User2,
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const SignIn = () => {
+const ForgotPassword = () => {
   const success = false;
   const { register, handleSubmit } = useForm<{
-    username: string;
-    password: string;
+    email: string;
   }>({
     mode: "onChange",
   });
   
-  const [signin, {isLoading}] = useSigninMutation();
-
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [forgotPassword, {isLoading}] = useForgotPasswordMutation();
   const [focusedField, setFocusedField] = React.useState<string>("");
   // const emailValue = watch("email");
 
@@ -37,7 +31,7 @@ const SignIn = () => {
       const payload = {
         ...data,
       }
-      const response = await signin(payload);
+      const response = await forgotPassword(payload);
       console.log(response);
     } catch (error) {
       console.error("Error during form submission:", error);
@@ -60,10 +54,10 @@ const SignIn = () => {
               <User className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
             </div>
             <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 lg:mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
-              Welcome Back
+              Forgot Your Password?
             </h1>
             <p className="text-gray-300 text-base lg:text-lg">
-              Sign in to your trading account
+              Reset your password by entering your email below.
             </p>
           </div>
 
@@ -87,11 +81,11 @@ const SignIn = () => {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-200"
                 >
-                  Username
+                  Email
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User2
+                    <Mail
                       className={`h-5 w-5 transition-colors duration-200 ${
                         focusedField === "email"
                           ? "text-blue-400"
@@ -100,60 +94,14 @@ const SignIn = () => {
                     />
                   </div>
                   <input
-                    id="username"
-                    type="username"
-                    {...register("username", { required: true })}
-                    onFocus={() => setFocusedField("username")}
+                    id="email"
+                    type="email"
+                    {...register("email", { required: true })}
+                    onFocus={() => setFocusedField("email")}
                     onBlur={() => setFocusedField("")}
                     className="block w-full pl-10 pr-3 py-3 lg:py-4 border border-white/20 rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-base lg:text-lg"
-                    placeholder="Enter your username"
+                    placeholder="Enter your email"
                   />
-                  {/* {emailValue && emailValue.includes("@") && (
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                    </div>
-                  )} */}
-                </div>
-              </div>
-
-              {/* Password Field */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-200"
-                >
-                  Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock
-                      className={`h-5 w-5 transition-colors duration-200 ${
-                        focusedField === "password"
-                          ? "text-blue-400"
-                          : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password", { required: true })}
-                    onFocus={() => setFocusedField("password")}
-                    onBlur={() => setFocusedField("")}
-                    className="block w-full pl-10 pr-10 py-3 lg:py-4 border border-white/20 rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-base lg:text-lg"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:scale-110 transition-transform duration-200"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -174,11 +122,11 @@ const SignIn = () => {
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Signing in...
+                    Loading...
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-2">
-                    Sign In
+                    Submit
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                   </div>
                 )}
@@ -188,24 +136,14 @@ const SignIn = () => {
             {/* Register Link */}
             <div className="mt-6 lg:mt-8 text-center">
               <p className="text-gray-300 text-sm lg:text-base">
-                Don't have an account?{" "}
+                Back to{" "}
                 <Link
-                  href="/signup"
+                  href="/signin"
                   className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-all duration-200"
                 >
-                  Create one here
+                  Signin
                 </Link>
               </p>
-            </div>
-
-            {/* Additional Links */}
-            <div className="mt-4 text-center">
-              <Link
-                href="/forgot-password"
-                className="text-gray-400 hover:text-gray-300 text-sm hover:underline transition-all duration-200"
-              >
-                Forgot your password?
-              </Link>
             </div>
           </div>
         </div>
@@ -255,4 +193,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default ForgotPassword;

@@ -1,16 +1,18 @@
 "use client";
 import { Button } from "@/components/reusable/Button/Button";
+import { useSignupMutation } from "@/redux/Features/Auth/authApi";
 import {
   AlertCircle,
   ArrowRight,
   CheckCircle,
   Eye,
   EyeOff,
-  Globe,
+  // Globe,
   Lock,
   Mail,
   Phone,
   User,
+  User2,
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -18,16 +20,17 @@ import { useForm } from "react-hook-form";
 
 type FormData = {
   name: string;
+  username: string;
   email: string;
   phone?: string;
-  country?: string;
+  referral_code?: string;
   password: string;
-  confirmPassword: string;
 };
 
 const SignUp = () => {
-  const isLoading = false;
-  const error = false; // Replace with your error state if any
+  const error = false;
+  const [signup, {isLoading}] = useSignupMutation();
+
 
   const {
     register,
@@ -39,13 +42,13 @@ const SignUp = () => {
   });
 
   const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [focusedField, setFocusedField] = React.useState<string>("");
 
   const watchName = watch("name");
   const watchEmail = watch("email");
   const watchPassword = watch("password");
-  const watchConfirmPassword = watch("confirmPassword");
+  // const watchConfirmPassword = watch("confirmPassword");
 
   const passwordStrength = React.useMemo(() => {
     // Simple strength calculation based on length
@@ -73,9 +76,16 @@ const SignUp = () => {
     return { strength, text, color };
   }, [watchPassword]);
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form submitted:", data);
-    // Add your submit logic here
+  const onSubmit = async (data: FormData) => {
+    try {
+      const payload = {
+        ...data,
+      }
+      const response = await signup(payload);
+      console.log(response);
+    } catch (error) {
+      console.error("Error during form submission:", error);
+    }
   };
 
   return (
@@ -147,6 +157,43 @@ const SignUp = () => {
                     </div>
                     {errors.name && (
                       <p className="text-red-400 text-xs mt-1">Name is required</p>
+                    )}
+                  </div>
+                  {/* Username */}
+                  <div className="space-y-1 sm:space-y-2">
+                    <label
+                      htmlFor="name"
+                      className="block text-xs sm:text-sm font-medium text-gray-200"
+                    >
+                      Username *
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User
+                          className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors duration-200 ${
+                            focusedField === "name"
+                              ? "text-blue-400"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      </div>
+                      <input
+                        id="name"
+                        type="text"
+                        {...register("username", { required: true })}
+                        className={`block w-full pl-8 sm:pl-10 pr-3 py-2 sm:py-3 lg:py-4 border rounded-lg sm:rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-sm sm:text-base border-white/20 ${
+                          errors.name ? "border-red-500" : ""
+                        }`}
+                        placeholder="Enter your username"
+                      />
+                      {watchName && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+                        </div>
+                      )}
+                    </div>
+                    {errors.username && (
+                      <p className="text-red-400 text-xs mt-1">Username is required</p>
                     )}
                   </div>
 
@@ -224,9 +271,36 @@ const SignUp = () => {
                         />
                       </div>
                     </div>
+                    {/* Phone Field */}
+                    <div className="space-y-1 sm:space-y-2">
+                      <label
+                        htmlFor="phone"
+                        className="block text-xs sm:text-sm font-medium text-gray-200"
+                      >
+                        Referral Code
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <User2
+                            className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors duration-200 ${
+                              focusedField === "phone"
+                                ? "text-blue-400"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </div>
+                        <input
+                          id="referral_code"
+                          type="text"
+                          {...register("referral_code")}
+                          className="block w-full pl-8 sm:pl-10 pr-3 py-2 sm:py-3 lg:py-4 border rounded-lg sm:rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-sm sm:text-base border-white/20"
+                          placeholder="referral_code"
+                        />
+                      </div>
+                    </div>
 
                     {/* Country Field */}
-                    <div className="space-y-1 sm:space-y-2">
+                    {/* <div className="space-y-1 sm:space-y-2">
                       <label
                         htmlFor="country"
                         className="block text-xs sm:text-sm font-medium text-gray-200"
@@ -285,7 +359,7 @@ const SignUp = () => {
                           </option>
                         </select>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Password Field */}
@@ -363,7 +437,7 @@ const SignUp = () => {
                   </div>
 
                   {/* Confirm Password Field */}
-                  <div className="space-y-1 sm:space-y-2">
+                  {/* <div className="space-y-1 sm:space-y-2">
                     <label
                       htmlFor="confirmPassword"
                       className="block text-xs sm:text-sm font-medium text-gray-200"
@@ -418,7 +492,7 @@ const SignUp = () => {
                         {errors.confirmPassword.message || "Confirm password is required"}
                       </p>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Error Message */}
                   {error && (
@@ -432,7 +506,7 @@ const SignUp = () => {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-2 sm:py-3 lg:py-4 rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base lg:text-lg"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-2 sm:py-3 lg:py-4 rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base lg:text-lg cursor-pointer"
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center gap-2">

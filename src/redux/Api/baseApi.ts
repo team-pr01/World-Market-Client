@@ -5,7 +5,7 @@ import { setUser } from '../Features/Auth/authSlice';
 
 const baseQuery = fetchBaseQuery({
   // baseUrl: 'http://localhost:5000/api/v1',
-  baseUrl: 'https://shopfinity-server.vercel.app/api/v1',
+  baseUrl: 'https://test.kajghor.com/api',
   credentials : 'include',
   prepareHeaders : (headers, {getState}) => {
     const token = (getState() as RootState).auth.token;
@@ -22,7 +22,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<FetchArgs, BaseQueryApi, Definition
   console.log(result);
 
   if(result.error?.status === 401){
-    const res = await fetch('https://shopfinity-server.vercel.app/api/v1/auth/refresh-token', {
+    const res = await fetch('https://test.kajghor.com/api/auth/refresh-token', {
       credentials : 'include'
     });
 
@@ -43,7 +43,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<FetchArgs, BaseQueryApi, Definition
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ["categories", "users", "payments", "products", "sellers", "cart"],
+  tagTypes: ["user"],
   endpoints: () => ({}),
 });
 
