@@ -15,7 +15,7 @@ import { ArrowLeft, ListChecks, ArrowDownCircle, ArrowUpCircle, Search, Info, Re
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 // import { cn } from "@/utils/utils"
 import { Button } from "@/components/reusable/Button/Button"
-import { useGetAllDepositsQuery } from "@/redux/Features/User/userApi"
+import { useGetAllDepositsQuery, useGetAllWithdrawalsQuery } from "@/redux/Features/User/userApi"
 
 // type CombinedTransaction = (Deposit | WithdrawalRequest) & { type: "deposit" | "withdrawal" }
 
@@ -52,13 +52,28 @@ const getStatusBadgeClasses = "deposit"
 
 export default function TransactionHistoryPage() {
 
-  const { data } = useGetAllDepositsQuery({
+  const { data:deposits, isLoading } = useGetAllDepositsQuery({
   page: 2,
   status: 'approved',
   startDate: '2023-01-01',
   endDate: '2023-12-31'
 });
-console.log(data);
+console.log(deposits);
+
+const { data:withdrawals } = useGetAllWithdrawalsQuery({
+  page: 2,
+  limit: 25,
+  sortBy: 'amount',
+  sortOrder: 'asc',
+  search: 'invoice123',
+  status: 'approved',
+  payment_method: 'bank',
+  startDate: '2023-01-01',
+  endDate: '2023-12-31',
+  minAmount: 100,
+  maxAmount: 1000
+});
+console.log(withdrawals);
 
 
 
@@ -69,7 +84,6 @@ console.log(data);
   // const { getCurrentUser } = useUserStore()
 
   const [transactions, setTransactions] = useState([1,2])
-  const [isLoading, setIsLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all") // "all", "pending", "approved", "rejected"
   const [typeFilter, setTypeFilter] = useState<"all" | "deposit" | "withdrawal">("all")
