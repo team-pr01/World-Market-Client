@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import React from "react";
 import { useForm } from "react-hook-form";
+import Cookies from "js-cookie";
 
 const SignIn = () => {
   const success = false;
@@ -39,6 +40,10 @@ const SignIn = () => {
       }
       const response = await signin(payload);
       console.log(response);
+      if( response?.data?.success) {
+        Cookies.set("accessToken", response?.data?.token, { expires: 7 });
+        window.location.href = "/";
+      }
     } catch (error) {
       console.error("Error during form submission:", error);
     }

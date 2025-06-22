@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/reusable/Button/Button";
 import { useSignupMutation } from "@/redux/Features/Auth/authApi";
@@ -15,8 +16,10 @@ import {
   User2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { toast, Toaster } from "sonner";
 
 type FormData = {
   name: string;
@@ -28,6 +31,7 @@ type FormData = {
 };
 
 const SignUp = () => {
+  const router = useRouter();
   const error = false;
   const [signup, {isLoading}] = useSignupMutation();
 
@@ -81,9 +85,14 @@ const SignUp = () => {
       const payload = {
         ...data,
       }
-      const response = await signup(payload);
+      const response = await signup(payload).unwrap();
+      if(response?.success) {
+        toast.success("Account created successfully! Please check login.");
+        router.push("/signin");
+      }
       console.log(response);
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.data?.message || "An error occurred during signup");
       console.error("Error during form submission:", error);
     }
   };
@@ -271,7 +280,7 @@ const SignUp = () => {
                         />
                       </div>
                     </div>
-                    {/* Phone Field */}
+                    {/* Referral code Field */}
                     <div className="space-y-1 sm:space-y-2">
                       <label
                         htmlFor="phone"
@@ -294,7 +303,7 @@ const SignUp = () => {
                           type="text"
                           {...register("referral_code")}
                           className="block w-full pl-8 sm:pl-10 pr-3 py-2 sm:py-3 lg:py-4 border rounded-lg sm:rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-sm sm:text-base border-white/20"
-                          placeholder="referral_code"
+                          placeholder="Enter referral code"
                         />
                       </div>
                     </div>
@@ -520,6 +529,7 @@ const SignUp = () => {
                       </div>
                     )}
                   </Button>
+                  
                 </form>
 
                 {/* Login Link */}
@@ -580,6 +590,7 @@ const SignUp = () => {
           animation: shake 0.5s ease-in-out;
         }
       `}</style>
+      <Toaster position="top-center" richColors />
     </div>
   );
 };
