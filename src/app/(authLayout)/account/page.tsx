@@ -1,7 +1,5 @@
 "use client"
-
 import React, { useRef, useState } from "react"
-// import { useUserStore, type User } from "@/lib/user-store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -32,16 +30,15 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/reusable/Button/Button"
+import { useGetMeQuery, useUpdateProfileMutation } from "@/redux/Features/User/userApi"
 
 type EditableField = "username" | "address" | "phoneNumber" | null
 
 const AccountPage = () => {
-  const router = useRouter()
-  // const { isAuthenticated } = useAuthStore()
-  // const { getCurrentUser, updateProfilePicture, updateUserProfile } = useUserStore()
-
-  // স্টোর থেকে সরাসরি বর্তমান ব্যবহারকারীকে পান।
-  // ব্যবহারকারীর অবজেক্ট বা প্রমাণীকরণের অবস্থা পরিবর্তন হলে এই হুক পুনরায় রেন্ডার করবে।
+  const router = useRouter();
+  const {data:profile} = useGetMeQuery({});
+  console.log(profile);
+  const [updateProfile, {isLoading:isProfileUpdating}] = useUpdateProfileMutation();
 
   const currentUser = {
     id: "12345",
@@ -60,36 +57,6 @@ const AccountPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [currentEditingField, setCurrentEditingField] = useState<EditableField>(null)
   const [editValue, setEditValue] = useState("")
-
-  // React.useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     router.push("/login")
-  //   }
-  // }, [isAuthenticated, router])
-
-  // if (!isAuthenticated || !currentUser) {
-  //   return (
-  //     <div className="flex min-h-screen items-center justify-center p-4 bg-gray-100 dark:bg-slate-900">
-  //       <p className="text-gray-700 dark:text-gray-300">Loading user data or user not found...</p>
-  //     </div>
-  //   )
-  // }
-
-  // পরবর্তী সমস্ত কোড `currentUser` ব্যবহার করে
-  // const canVerify = !!(currentUser.address && currentUser.phoneNumber && currentUser.country)
-
-  // const handleVerify = () => {
-  //   if (canVerify) {
-  //     setVerificationStatus(currentUser.id, true)
-  //     toast.success("Account successfully verified!", {
-  //       description: "You now have access to all features.",
-  //     })
-  //   } else {
-  //     toast.error("Verification Failed", {
-  //       description: "Please complete your Address, Phone Number, and Country before verifying.",
-  //     })
-  //   }
-  // }
 
   const handleProfilePictureUpload = () => {
     fileInputRef.current?.click()
@@ -159,7 +126,6 @@ const AccountPage = () => {
           size="icon"
           onClick={(e) => {
             e.stopPropagation()
-            // `value` এখানে ProfileItem-এ পাস করা প্রপ। এটি সঠিক হওয়া উচিত।
             openEditModal(fieldKey, value)
           }}
         >
@@ -343,7 +309,7 @@ const AccountPage = () => {
                   id="edit-value"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="col-span-3 bg-gray-50 dark:bg-slate-700 border-slate-600 text-gray-50 placeholder-gray-500"
+                  className="col-span-3 bg-slate-700 border-slate-600 text-gray-50 placeholder-gray-500"
                   placeholder={`Enter new ${currentEditingField?.toLowerCase()}`}
                 />
               </div>

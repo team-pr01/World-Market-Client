@@ -110,7 +110,7 @@ const SignUp = () => {
                   Create Account
                 </h1>
                 <p className="text-gray-300 text-sm sm:text-base lg:text-lg">
-                  Join World Market Trading Platform
+                  Join World Merket Trading Platform
                 </p>
               </div>
 
