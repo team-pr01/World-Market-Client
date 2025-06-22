@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/dialog"
+} from "@/components/ui/dialog"
 import {  TooltipProvider } from "@/components/ui/tooltip"
 import {
   UserCircle,
