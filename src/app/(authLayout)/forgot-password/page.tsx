@@ -53,7 +53,7 @@ const ForgotPassword = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full mb-4 lg:mb-6 shadow-2xl transform hover:scale-110 transition-transform duration-300">
               <User className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
             </div>
-            <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 lg:mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
+            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 lg:mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
               Forgot Your Password?
             </h1>
             <p className="text-gray-300 text-base lg:text-lg">
@@ -117,7 +117,7 @@ const ForgotPassword = () => {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium py-3 lg:py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-base lg:text-lg"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium py-3 lg:py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-base lg:text-lg cursor-pointer"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
