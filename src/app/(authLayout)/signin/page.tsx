@@ -21,7 +21,7 @@ import Cookies from "js-cookie";
 const SignIn = () => {
   const success = false;
   const { register, handleSubmit } = useForm<{
-    username: string;
+    identifier: string;
     password: string;
   }>({
     mode: "onChange",
@@ -39,7 +39,6 @@ const SignIn = () => {
         ...data,
       }
       const response = await signin(payload);
-      console.log(response);
       if( response?.data?.success) {
         Cookies.set("accessToken", response?.data?.token, { expires: 7 });
         window.location.href = "/";
@@ -105,10 +104,10 @@ const SignIn = () => {
                     />
                   </div>
                   <input
-                    id="username"
-                    type="username"
-                    {...register("username", { required: true })}
-                    onFocus={() => setFocusedField("username")}
+                    id="identifier"
+                    type="identifier"
+                    {...register("identifier", { required: true })}
+                    onFocus={() => setFocusedField("identifier")}
                     onBlur={() => setFocusedField("")}
                     className="block w-full pl-10 pr-3 py-3 lg:py-4 border border-white/20 rounded-xl bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-white/10 text-base lg:text-lg"
                     placeholder="Enter your username"

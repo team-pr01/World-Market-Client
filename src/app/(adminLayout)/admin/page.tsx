@@ -57,7 +57,7 @@ export default function AdminDashboard() {
       description: "View and manage user details",
       icon: Users,
       color: "from-purple-500 to-purple-600",
-      href: "/admin/accounts",
+      href: "/admin/users",
     },
     {
       // New Menu Item for Support Tickets

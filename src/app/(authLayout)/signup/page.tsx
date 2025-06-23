@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 type FormData = {
   name: string;
@@ -31,7 +31,6 @@ type FormData = {
 };
 
 const SignUp = () => {
-  const router = useRouter();
   const error = false;
   const [signup, {isLoading}] = useSignupMutation();
 
@@ -41,6 +40,7 @@ const SignUp = () => {
     handleSubmit,
     watch,
     formState: { errors },
+    reset,
   } = useForm<FormData>({
     mode: "onChange",
   });
@@ -86,11 +86,11 @@ const SignUp = () => {
         ...data,
       }
       const response = await signup(payload).unwrap();
-      if(response?.success) {
-        toast.success("Account created successfully! Please check login.");
-        router.push("/signin");
-      }
       console.log(response);
+      if(response?.success) {
+        toast.success("Account created successfully! We have sent verification email to your email address. Please verify your email address to complete signup process.");
+        reset();
+      }
     } catch (error: any) {
       toast.error(error?.data?.message || "An error occurred during signup");
       console.error("Error during form submission:", error);
@@ -590,7 +590,6 @@ const SignUp = () => {
           animation: shake 0.5s ease-in-out;
         }
       `}</style>
-      <Toaster position="top-center" richColors />
     </div>
   );
 };

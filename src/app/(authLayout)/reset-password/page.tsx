@@ -71,13 +71,15 @@ const ResetPassword = () => {
     return { strength, text, color };
   }, [watchPassword]);
 
+  console.log(token);
+
   const onSubmit = async (data: FormData) => {
     try {
       const payload = {
         ...data,
         token,
       }
-      const response = await resetPassword(payload);
+      const response = await resetPassword(payload).unwrap();
       console.log(response);
     } catch (error) {
       console.error("Error during form submission:", error);

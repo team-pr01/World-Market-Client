@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const ForgotPassword = () => {
   const success = false;
@@ -31,9 +32,12 @@ const ForgotPassword = () => {
       const payload = {
         ...data,
       }
-      const response = await forgotPassword(payload);
-      console.log(response);
-    } catch (error) {
+      const response = await forgotPassword(payload).unwrap();
+      if (response?.success) {
+        toast.success(response?.message || "Password reset email sent successfully!");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "An error occurred while sending the password reset email.");
       console.error("Error during form submission:", error);
     }
   };

@@ -12,6 +12,16 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["user"],
     }),
+    
+    verifyEmail: builder.mutation({
+      query: (userInfo) => ({
+        url: "/auth/verify-email",
+        method: "POST",
+        body: userInfo,
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
 
     signin: builder.mutation({
       query: (userInfo) => ({
@@ -34,8 +44,8 @@ const authApi = baseApi.injectEndpoints({
     }),
 
     resetPassword: builder.mutation({
-      query: ({resetPasswordData, token}) => ({
-        url: `/auth/reset-password/${token}`,
+      query: ({resetPasswordData}) => ({
+        url: `/auth/reset-password`,
         method: "POST",
         body: resetPasswordData,
         credentials: "include",
@@ -47,6 +57,7 @@ const authApi = baseApi.injectEndpoints({
 
 export const {
   useSignupMutation,
+  useVerifyEmailMutation,
   useSigninMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation
