@@ -15,10 +15,10 @@ import { useGetAllUserQuery } from "@/redux/Features/Admin/adminApi"
 import UserCard from "./_components/UserCard"
 
 export default function AdminUserAccountsPage() {
-  const {data} = useGetAllUserQuery({});
+  const [searchTerm, setSearchTerm] = useState("")
+  const {data} = useGetAllUserQuery({ search: searchTerm});
   console.log(data, "all users data");
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
 
   const handleLogout = () => {
     localStorage.removeItem("adminAuthenticated")
@@ -58,7 +58,7 @@ export default function AdminUserAccountsPage() {
         <div className="relative">
           <Input
             type="text"
-            placeholder="Search by ID, Username, or Email..."
+            placeholder="Search by username"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-gray-800 border-gray-700 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"

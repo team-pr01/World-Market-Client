@@ -83,15 +83,16 @@ const adminApi = baseApi.injectEndpoints({
       }),
       providesTags: ["user"],
     }),
+getAllUser: builder.query({
+  query: (params) => ({
+    url: "/admin/users",
+    method: "GET",
+    credentials: "include",
+    params, // this will serialize query params automatically
+  }),
+  providesTags: ["user"],
+}),
 
-    getAllUser: builder.query({
-      query: () => ({
-        url: "/admin/users",
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["user"],
-    }),
 
     getSingleUserById: builder.query({
       query: (id) => ({

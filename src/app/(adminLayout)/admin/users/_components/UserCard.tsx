@@ -42,7 +42,7 @@ const UserCard = ({user} : {user:any}) => {
         </div>
         <div className="flex items-center text-gray-300">
           <Phone className="w-4 h-4 mr-2 text-purple-400" />
-          <span>{user.phoneNumber || "N/A"}</span>
+          <span>{user.phone || "N/A"}</span>
         </div>
         <div className="flex items-center text-gray-300">
           <MapPin className="w-4 h-4 mr-2 text-purple-400" />
