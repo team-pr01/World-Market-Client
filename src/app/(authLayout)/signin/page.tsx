@@ -17,9 +17,12 @@ import Link from "next/link";
 import React from "react";
 import { useForm } from "react-hook-form";
 import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/Features/Auth/authSlice";
 
 const SignIn = () => {
   const success = false;
+  const dispatch = useDispatch();
   const { register, handleSubmit } = useForm<{
     identifier: string;
     password: string;
@@ -39,9 +42,13 @@ const SignIn = () => {
         ...data,
       }
       const response = await signin(payload);
+      console.log(response);
       if( response?.data?.success) {
         Cookies.set("accessToken", response?.data?.token, { expires: 7 });
-        window.location.href = "/";
+        const user = response?.data?.user;
+        const accessToken = response?.data?.token;
+        dispatch(setUser({user, token: accessToken}));
+        window.location.href = "/"; 
       }
     } catch (error) {
       console.error("Error during form submission:", error);
