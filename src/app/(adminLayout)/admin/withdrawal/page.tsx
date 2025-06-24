@@ -42,6 +42,7 @@ export default function AdminWithdrawalPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const isProcessing = false;
   const [isMobile, setIsMobile] = useState(false);
+  console.log(isMobile);
 
   // Check if mobile
   useEffect(() => {

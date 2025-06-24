@@ -14,14 +14,24 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/reusable/Button/Button"
 import Link from "next/link"
+import { logout } from "@/redux/Features/Auth/authSlice"
+import { useDispatch } from "react-redux"
+import Cookies from "js-cookie";
+import { toast } from "sonner"
 
 export default function AdminDashboard() {
   const router = useRouter()
+  const dispatch = useDispatch()
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuthenticated")
-    router.push("/admin/login")
-  }
+const handleLogout = async () => {
+    // Remove cookies
+    Cookies.remove("accessToken");
+    // Dispatch logout and navigate
+    dispatch(logout());
+    toast.success("Logged out successfully.");
+    localStorage.clear();
+    router.push("/admin/login");
+  };
 
   const menuItems = [
     {
