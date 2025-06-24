@@ -29,17 +29,13 @@ import {
 const getStatusBadgeClasses = "deposit";
 
 export default function DepositHistoryPage() {
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const { data: deposits, isLoading } = useGetAllDepositsQuery({
-    page: 2,
-    status: "approved",
+    search: searchTerm,
+    status: statusFilter,
   });
   console.log(deposits);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<
-    "all" | "deposit" | "withdrawal"
-  >("all");
 
   if (isLoading) {
     return (
@@ -64,9 +60,9 @@ export default function DepositHistoryPage() {
               ) : (
                 <ArrowUpCircle className="h-6 w-6 mr-2 text-red-400" />
               )}
-              {isDeposit ? "Deposit" : "Withdrawal"}
+              Deposit
             </CardTitle>
-            <Badge className={getStatusBadgeClasses}>{status}</Badge>
+            <Badge className={getStatusBadgeClasses}>{tx?.status}</Badge>
             {/* <Badge className={cn("text-xs", getStatusBadgeClasses(status, tx.type))}>{status}</Badge> */}
           </div>
         </CardHeader>
@@ -79,30 +75,19 @@ export default function DepositHistoryPage() {
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Method:</span>
-            <span>Wallet Name</span>
+            <span className="text-slate-400">Transaction Id:</span>
+            <span className="font-semibold">
+              {tx?.transaction_id || "N/A"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Payment Method:</span>
+            <span>{tx?.payment_method}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Date:</span>
-            <span>25 June,2025</span>
-            {/* <span>{format(new Date(date), "PPpp")}</span> */}
+            <span>{new Date(tx?.created_at).toLocaleDateString()}</span>
           </div>
-          {isDeposit && (
-            <div className="flex justify-between">
-              <span className="text-slate-400">Transaction ID:</span>
-              <span className="font-mono text-xs truncate max-w-[150px]">
-                Deposit transaction id
-              </span>
-            </div>
-          )}
-          {!isDeposit && (
-            <div className="flex justify-between">
-              <span className="text-slate-400">Request ID:</span>
-              <span className="font-mono text-xs truncate max-w-[150px]">
-                Withdraw id
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     );
@@ -155,30 +140,6 @@ export default function DepositHistoryPage() {
             <div className="grid grid-cols-2 gap-2 sm:col-span-1">
               <div>
                 <label
-                  htmlFor="type-filter"
-                  className="block text-xs font-medium text-slate-400 mb-1"
-                >
-                  Type
-                </label>
-                <Select
-                  value={typeFilter}
-                  onValueChange={(value) => setTypeFilter(value as any)}
-                >
-                  <SelectTrigger
-                    id="type-filter"
-                    className="bg-slate-700 border-slate-600 text-slate-200 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600 text-slate-200">
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="deposit">Deposits</SelectItem>
-                    <SelectItem value="withdrawal">Withdrawals</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label
                   htmlFor="status-filter"
                   className="block text-xs font-medium text-slate-400 mb-1"
                 >
@@ -212,7 +173,7 @@ export default function DepositHistoryPage() {
               </p>
               <p className="text-slate-400 mt-2">
                 {deposits?.data?.deposits?.length > 0 &&
-                (searchTerm || statusFilter !== "all" || typeFilter !== "all")
+                (searchTerm || statusFilter !== "all")
                   ? "No transactions match your current filters."
                   : "You haven't made any transactions yet."}
               </p>

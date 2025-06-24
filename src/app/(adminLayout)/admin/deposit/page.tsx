@@ -38,7 +38,6 @@ export default function DepositPage() {
   const [statusFilter, setStatusFilter] = useState<any | "all">("all")
   const {data, isLoading, isFetching} = useGetAllDepositsQuery({search : searchTerm, status: statusFilter});
   const [selectedDeposit, setSelectedDeposit] = useState<any | null>(null);
-  console.log(selectedDeposit, "selected deposit");
   const router = useRouter();
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
@@ -51,7 +50,10 @@ export default function DepositPage() {
 
   const handleApproveDeposit = async (id:string) => {
     try{
-      await approveDeposit(id).unwrap();
+    const response = await approveDeposit(id).unwrap();
+     if(response?.success){
+        setIsDetailsOpen(false);
+      }
     } catch (error){
       console.log(error);
     }
@@ -59,7 +61,10 @@ export default function DepositPage() {
 
   const handleRejectDeposit = async (id:string) => {
     try{
-      await rejectDeposit(id).unwrap();
+      const response = await rejectDeposit(id).unwrap();
+      if(response?.success){
+        setIsDetailsOpen(false);
+      }
     } catch (error){
       console.log(error);
     }

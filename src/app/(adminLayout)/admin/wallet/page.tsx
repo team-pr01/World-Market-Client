@@ -1,102 +1,54 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   WalletIcon,
   Plus,
   Trash2,
   Edit,
-  Clock,
   DollarSign,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react"
-// import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  RefreshCw,
+} from "lucide-react";
 
-
-// Add pagination imports
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Button } from "@/components/reusable/Button/Button"
-import { cn } from "@/utils/utils"
-import AddWalletForm from "./_components/AddWalletForm"
-import { useGetAllPaymentMethodsQuery } from "@/redux/Features/Admin/adminApi"
+import { Button } from "@/components/reusable/Button/Button";
+import { cn } from "@/utils/utils";
+import AddWalletForm from "./_components/AddWalletForm";
+import { useDeletePaymentMethodMutation, useGetAllPaymentMethodsQuery } from "@/redux/Features/Admin/adminApi";
 
 export default function WalletPage() {
-  const {data} = useGetAllPaymentMethodsQuery({});
-  console.log(data);
-  const router = useRouter()
-  const [isAddWalletOpen, setIsAddWalletOpen] = useState(false)
+  const { data, isLoading } = useGetAllPaymentMethodsQuery({});
+  const [deletePaymentMethod] = useDeletePaymentMethodMutation();
+  const router = useRouter();
+  const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
   // const [searchTerm, setSearchTerm] = useState("")
 
-  // In the WalletPage component, add pagination state
-  const [currentPage, setCurrentPage] = useState(1)
-  const walletsPerPage = 6 // Number of wallets to display per page
-
-  const filteredWallets:any[] = [1,2,3,4,5]
-
-  // Update the filteredWallets logic to include pagination
-  const paginatedWallets = useMemo(() => {
-    const startIndex = (currentPage - 1) * walletsPerPage
-    return filteredWallets.slice(startIndex, startIndex + walletsPerPage)
-  }, [filteredWallets, currentPage, walletsPerPage])
-
-  // Calculate total pages
-  const totalPages = useMemo(
-    () => Math.ceil(filteredWallets.length / walletsPerPage),
-    [filteredWallets, walletsPerPage],
-  )
-
-  // Add a function to handle page changes
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    // Scroll to top of wallet list
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
   const handleEditWallet = () => {
-    setIsAddWalletOpen(true)
-  }
+    setIsAddWalletOpen(true);
+  };
 
-  const handleDeleteWallet = (id: number) => {
-    console.log(id);
+  const handleDeleteWallet = async (id:string) => {
+    try{
+      await deletePaymentMethod(id).unwrap();
+    } catch (error){
+      console.log(error);
+    }
   }
 
   const resetForm = () => {
     // setIsEditing(false)
     // setEditingId(null)
-  }
+  };
 
   const openAddWalletModal = () => {
-    resetForm()
-    setIsAddWalletOpen(true)
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
+    resetForm();
+    setIsAddWalletOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -114,7 +66,9 @@ export default function WalletPage() {
             </Button>
             <div className="flex items-center">
               <WalletIcon className="w-6 h-6 text-blue-500 mr-2" />
-              <h1 className="text-xl font-bold text-white">Wallet Management</h1>
+              <h1 className="text-xl font-bold text-white">
+                Wallet Management
+              </h1>
             </div>
           </div>
         </div>
@@ -162,16 +116,31 @@ export default function WalletPage() {
 
         {/* Wallets Grid with Pagination - This div should be scrollable */}
         <div className="flex-1 overflow-y-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          {filteredWallets.length > 0 ? (
+          {
+          isLoading ?
+          <div className="text-slate-100 flex flex-col items-center justify-center p-4">
+                      <RefreshCw
+                        size={48}
+                        className="animate-spin text-purple-400 mb-4"
+                      />
+                      <p className="text-xl">Loading Transaction History...</p>
+                    </div>
+                    :
+          data?.data?.paymentMethods?.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {paginatedWallets.map((wallet) => (
-                  <WalletCard key={wallet.id} wallet={wallet} onEdit={handleEditWallet} onDelete={handleDeleteWallet} />
+                {data?.data?.paymentMethods?.map((wallet: any) => (
+                  <WalletCard
+                    key={wallet.id}
+                    wallet={wallet}
+                    onEdit={handleEditWallet}
+                    onDelete={() => handleDeleteWallet(wallet._id)}
+                  />
                 ))}
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {/* {totalPages > 1 && (
                 <div className="flex justify-center mt-8 mb-12">
                   <Pagination>
                     <PaginationContent className="flex flex-wrap justify-center">
@@ -203,13 +172,17 @@ export default function WalletPage() {
                     </PaginationContent>
                   </Pagination>
                 </div>
-              )}
+              )} */}
             </>
           ) : (
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 p-8 text-center">
               <WalletIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-400 mb-2">No Wallets Found</h2>
-              <p className="text-gray-500 mb-6">Add your first wallet to start managing cryptocurrency payments</p>
+              <h2 className="text-2xl font-bold text-gray-400 mb-2">
+                No Wallets Found
+              </h2>
+              <p className="text-gray-500 mb-6">
+                Add your first wallet to start managing cryptocurrency payments
+              </p>
               <Button
                 onClick={openAddWalletModal}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
@@ -223,28 +196,40 @@ export default function WalletPage() {
       </main>
 
       {/* Add/Edit Wallet Dialog */}
-     <AddWalletForm open={isAddWalletOpen} onOpenChange={() => setIsAddWalletOpen(false)} setIsAddWalletOpen={setIsAddWalletOpen}/>
+      <AddWalletForm
+        open={isAddWalletOpen}
+        onOpenChange={() => setIsAddWalletOpen(false)}
+        setIsAddWalletOpen={setIsAddWalletOpen}
+      />
     </div>
-  )
+  );
 }
 
 // Wallet Card Component
-function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (wallet: any) => void, onDelete: (id: number) => void }) {
+function WalletCard({
+  wallet,
+  onEdit,
+  onDelete,
+}: {
+  wallet: any;
+  onEdit: (wallet: any) => void;
+  onDelete: (id: number) => void;
+}) {
   // Determine icon based on wallet type
-  const getWalletTypeIcon = (type:any) => {
+  const getWalletTypeIcon = (type: any) => {
     switch (type) {
       case "Bangladesh Mobile Banking":
-        return "🇧🇩"
+        return "🇧🇩";
       case "Cryptocurrency":
-        return "₿"
+        return "₿";
       case "Bank Transfer":
-        return "🏦"
+        return "🏦";
       case "E-Wallet":
-        return "💳"
+        return "💳";
       default:
-        return "💱"
+        return "💱";
     }
-  }
+  };
 
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] h-full">
@@ -253,7 +238,7 @@ function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (walle
           "h-2 w-full",
           wallet.active
             ? "bg-gradient-to-r from-green-500 to-emerald-500"
-            : "bg-gradient-to-r from-red-500 to-orange-500",
+            : "bg-gradient-to-r from-red-500 to-orange-500"
         )}
       />
 
@@ -268,7 +253,9 @@ function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (walle
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="text-xl">{getWalletTypeIcon(wallet.type)}</span>
+                <span className="text-xl">
+                  {getWalletTypeIcon(wallet.type)}
+                </span>
               )}
             </div>
             <div>
@@ -278,10 +265,12 @@ function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (walle
                 <span
                   className={cn(
                     "ml-2 px-2 py-0.5 text-xs rounded-full",
-                    wallet.active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400",
+                    wallet.status === "active"
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-red-500/20 text-red-400"
                   )}
                 >
-                  {wallet.active ? "Active" : "Inactive"}
+                  {wallet.status}
                 </span>
               </div>
             </div>
@@ -312,58 +301,30 @@ function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (walle
         <div className="space-y-3 mb-4">
           <div className="flex items-center text-sm">
             <DollarSign className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-300">Min Deposit: </span>
+            <span className="text-gray-300">Wallet Name: </span>
             <span className="ml-auto text-white font-medium">
-              {wallet.minDeposit} {wallet.symbol}
+              {wallet.method_name}
             </span>
           </div>
 
           <div className="flex items-center text-sm">
             <DollarSign className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-300">Min Withdrawal: </span>
+            <span className="text-gray-300">Currency: </span>
             <span className="ml-auto text-white font-medium">
-              {wallet.minWithdrawal} {wallet.symbol}
+              {wallet.currency}
             </span>
           </div>
 
           <div className="flex items-center text-sm">
             <DollarSign className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-300">Withdrawal Fee: </span>
+            <span className="text-gray-300">Method Category: </span>
             <span className="ml-auto text-white font-medium">
-              {wallet.withdrawalFee} {wallet.symbol}
+              {wallet.method_category}
             </span>
-          </div>
-
-          <div className="flex items-center text-sm">
-            <Clock className="h-4 w-4 text-gray-400 mr-2" />
-            <span className="text-gray-300">Processing Time: </span>
-            <span className="ml-auto text-white font-medium">{wallet.processingTime}</span>
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center">
-              {wallet.allowDeposit ? (
-                <ToggleRight className="h-4 w-4 text-green-500 mr-1" />
-              ) : (
-                <ToggleLeft className="h-4 w-4 text-gray-500 mr-1" />
-              )}
-              <span className={cn("text-xs", wallet.allowDeposit ? "text-green-400" : "text-gray-500")}>Deposit</span>
-            </div>
-
-            <div className="flex items-center">
-              {wallet.allowWithdrawal ? (
-                <ToggleRight className="h-4 w-4 text-green-500 mr-1" />
-              ) : (
-                <ToggleLeft className="h-4 w-4 text-gray-500 mr-1" />
-              )}
-              <span className={cn("text-xs", wallet.allowWithdrawal ? "text-green-400" : "text-gray-500")}>
-                Withdrawal
-              </span>
-            </div>
-          </div>
-
+        <div className="border-t border-gray-700 pt-3 flex items-center justify-end">
           <Button
             size="sm"
             variant="ghost"
@@ -375,5 +336,5 @@ function WalletCard({ wallet, onEdit, onDelete } : { wallet: any, onEdit: (walle
         </div>
       </div>
     </div>
-  )
+  );
 }

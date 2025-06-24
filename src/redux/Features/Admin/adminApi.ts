@@ -12,31 +12,25 @@ const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["user"],
     }),
 
-   getAllDeposits: builder.query({
-  query: (params = {}) => {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      status,
-    } = params;
+    getAllDeposits: builder.query({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, status } = params;
 
-    const queryParams = new URLSearchParams();
-    queryParams.append("page", page.toString());
-    queryParams.append("limit", limit.toString());
+        const queryParams = new URLSearchParams();
+        queryParams.append("page", page.toString());
+        queryParams.append("limit", limit.toString());
 
-    if (search) queryParams.append("search", search);
-    if (status && status !== "all") queryParams.append("status", status);
+        if (search) queryParams.append("search", search);
+        if (status && status !== "all") queryParams.append("status", status);
 
-    return {
-      url: `/admin/deposit?${queryParams.toString()}`,
-      method: "GET",
-      credentials: "include",
-    };
-  },
-  providesTags: ["user"],
-}),
-
+        return {
+          url: `/admin/deposit?${queryParams.toString()}`,
+          method: "GET",
+          credentials: "include",
+        };
+      },
+      providesTags: ["user"],
+    }),
 
     getDepositByID: builder.query({
       query: (id) => ({
@@ -50,7 +44,7 @@ const adminApi = baseApi.injectEndpoints({
     approveDeposit: builder.mutation({
       query: (id) => ({
         url: `/admin/deposit/${id}/approve`,
-        method: "PUT",
+        method: "POST",
         credentials: "include",
       }),
       invalidatesTags: ["user"],
@@ -119,7 +113,7 @@ const adminApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
-     getAllPaymentMethods: builder.query({
+    getAllPaymentMethods: builder.query({
       query: () => ({
         url: "/admin/payment-method",
         method: "GET",
@@ -128,11 +122,20 @@ const adminApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
-     addPaymentMethod: builder.mutation({
+    addPaymentMethod: builder.mutation({
       query: (data) => ({
         url: `/admin/payment-method/payment-method`,
         method: "POST",
         body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
+    deletePaymentMethod: builder.mutation({
+      query: (id) => ({
+        url: `/admin/payment-method/${id}`,
+        method: "DELETE",
         credentials: "include",
       }),
       invalidatesTags: ["user"],
@@ -154,4 +157,5 @@ export const {
   useGetSingleUserByIdQuery,
   useGetAllPaymentMethodsQuery,
   useAddPaymentMethodMutation,
+  useDeletePaymentMethodMutation,
 } = adminApi;

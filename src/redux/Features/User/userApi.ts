@@ -21,49 +21,31 @@ const userApi = baseApi.injectEndpoints({
     }),
 
     getAllDeposits: builder.query({
-      query: (params = {}) => {
-        const {
-          page = 1,
-          limit = 10,
-          sortBy = "created_at",
-          sortOrder = "desc",
-          search,
-          status,
-          payment_method,
-          startDate,
-          endDate,
-          minAmount,
-          maxAmount,
-        } = params;
+  query: (params = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+    } = params;
 
-        const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams();
 
-        // Always include page and limit with default values
-        queryParams.append("page", page.toString());
-        queryParams.append("limit", limit.toString());
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
 
-        // Include sort parameters with default values
-        queryParams.append("sortBy", sortBy);
-        queryParams.append("sortOrder", sortOrder);
+    if (search) queryParams.append("search", search);
+    if (status && status !== "all") queryParams.append("status", status); 
 
-        // Conditionally append other parameters if they exist
-        if (search) queryParams.append("search", search);
-        if (status) queryParams.append("status", status);
-        if (payment_method)
-          queryParams.append("payment_method", payment_method);
-        if (startDate) queryParams.append("startDate", startDate);
-        if (endDate) queryParams.append("endDate", endDate);
-        if (minAmount) queryParams.append("minAmount", minAmount.toString());
-        if (maxAmount) queryParams.append("maxAmount", maxAmount.toString());
+    return {
+      url: `/deposit?${queryParams.toString()}`,
+      method: "GET",
+      credentials: "include",
+    };
+  },
+  providesTags: ["user"],
+}),
 
-        return {
-          url: `/deposit?${queryParams.toString()}`,
-          method: "GET",
-          credentials: "include",
-        };
-      },
-      providesTags: ["user"],
-    }),
 
    getAllWithdrawals: builder.query({
   query: (params = {}) => {

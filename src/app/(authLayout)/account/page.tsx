@@ -29,7 +29,6 @@ import {
   UploadCloud,
   Edit3,
   Globe,
-  Ticket,
   ListChecks,
   ListFilter,
   User,
@@ -322,12 +321,12 @@ const AccountPage = () => {
                 isNavigation
               />
               <Separator className="my-1 bg-slate-700/50" />
-              <ProfileItem
+              {/* <ProfileItem
                 icon={Ticket}
                 label="My Support Tickets"
                 onClick={() => router.push("/my-tickets")}
                 isNavigation
-              />
+              /> */}
             </CardContent>
           </Card>
         </div>

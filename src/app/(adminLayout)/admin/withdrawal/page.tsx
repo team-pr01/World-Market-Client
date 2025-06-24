@@ -61,7 +61,10 @@ export default function AdminWithdrawalPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      await approveWithdraw(id).unwrap();
+     const response= await approveWithdraw(id).unwrap();
+     if(response?.success){
+        setIsDetailsOpen(false);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -69,7 +72,10 @@ export default function AdminWithdrawalPage() {
 
   const handleReject = async (id: string) => {
     try {
-      await rejectWithdraw(id).unwrap();
+     const response = await rejectWithdraw(id).unwrap();
+      if(response?.success){
+        setIsDetailsOpen(false);
+      }
     } catch (error) {
       console.log(error);
     }

@@ -31,9 +31,6 @@
 //   ArrowUpFromLine,
 // } from "lucide-react"
 // import { useRouter } from "next/navigation"
-// import { useUserStore } from "@/lib/user-store"
-// import { useAuthStore } from "@/lib/auth-store"
-// import { useTradeStore, type TradeDirection } from "@/lib/trade-store"
 // import { QuotexChart } from "./components/quotex-chart"
 // import { BalanceSwitcher } from "./components/balance-switcher"
 // import { useChartDataStore } from "@/lib/chart-data-store"
