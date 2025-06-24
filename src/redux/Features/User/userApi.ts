@@ -65,33 +65,32 @@ const userApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
-    getAllWithdrawals: builder.query({
-      query: (params = {}) => {
-        const {
-          page = 1,
-          limit = 10,
-          search,
-          status,
-        } = params;
+   getAllWithdrawals: builder.query({
+  query: (params = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+    } = params;
 
-        const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams();
 
-        // Always include page and limit with default values
-        queryParams.append("page", page.toString());
-        queryParams.append("limit", limit.toString());
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
 
-        // Conditionally append other parameters if they exist
-        if (search) queryParams.append("search", search);
-        if (status) queryParams.append("status", status);
+    if (search) queryParams.append("search", search);
+    if (status && status !== "all") queryParams.append("status", status);
 
-        return {
-          url: `/withdraw?${queryParams.toString()}`,
-          method: "GET",
-          credentials: "include",
-        };
-      },
-      providesTags: ["user"],
-    }),
+    return {
+      url: `/withdraw?${queryParams.toString()}`,
+      method: "GET",
+      credentials: "include",
+    };
+  },
+  providesTags: ["user"],
+}),
+
 
     updateProfile: builder.mutation({
       query: (profileUpdatedData) => ({

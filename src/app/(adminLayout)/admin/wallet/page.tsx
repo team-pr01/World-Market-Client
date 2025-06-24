@@ -4,31 +4,21 @@
 
 import type React from "react"
 
-import { useState, useRef, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   WalletIcon,
   Plus,
-  Upload,
   Trash2,
   Edit,
-  Search,
-  ChevronDown,
-  Info,
   Clock,
   DollarSign,
-  ArrowDownCircle,
-  ArrowUpCircle,
   ToggleLeft,
   ToggleRight,
 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+// import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 // Add pagination imports
 import {
@@ -41,31 +31,15 @@ import {
 } from "@/components/ui/pagination"
 import { Button } from "@/components/reusable/Button/Button"
 import { cn } from "@/utils/utils"
+import AddWalletForm from "./_components/AddWalletForm"
+import { useGetAllPaymentMethodsQuery } from "@/redux/Features/Admin/adminApi"
 
 export default function WalletPage() {
+  const {data} = useGetAllPaymentMethodsQuery({});
+  console.log(data);
   const router = useRouter()
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState("all")
-  const [newWallet, setNewWallet] = useState<Omit<any, "id">>({
-    name: "",
-    symbol: "",
-    type: "Cryptocurrency",
-    address: "",
-    minDeposit: 0,
-    minWithdrawal: 0,
-    withdrawalFee: 0,
-    processingTime: "",
-    description: "",
-    instructions: "",
-    allowDeposit: true,
-    allowWithdrawal: true,
-    active: true,
-    logo: "",
-  })
-  const [isEditing, setIsEditing] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  // const [searchTerm, setSearchTerm] = useState("")
 
   // In the WalletPage component, add pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -92,14 +66,7 @@ export default function WalletPage() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  const handleAddWallet = () => {
-    setIsAddWalletOpen(true)
-  }
-
-  const handleEditWallet = (wallet: any) => {
-    setNewWallet(wallet)
-    setIsEditing(true)
-    setEditingId(wallet.id)
+  const handleEditWallet = () => {
     setIsAddWalletOpen(true)
   }
 
@@ -108,56 +75,28 @@ export default function WalletPage() {
   }
 
   const resetForm = () => {
-    setNewWallet({
-      name: "",
-      symbol: "",
-      type: "Cryptocurrency",
-      address: "",
-      minDeposit: 0,
-      minWithdrawal: 0,
-      withdrawalFee: 0,
-      processingTime: "",
-      description: "",
-      instructions: "",
-      allowDeposit: true,
-      allowWithdrawal: true,
-      active: true,
-      logo: "", // Remove the placeholder URL
-    })
-    setIsEditing(false)
-    setEditingId(null)
-  }
-
-  const handleLogoUpload = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        // Handle file size error
-        return
-      }
-
-      try {
-        // Convert file to base64
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          const base64String = event.target?.result as string
-          setNewWallet({ ...newWallet, logo: base64String })
-        }
-        reader.readAsDataURL(file)
-      } catch (error) {
-        console.error("Error converting file to base64:", error)
-      }
-    }
+    // setIsEditing(false)
+    // setEditingId(null)
   }
 
   const openAddWalletModal = () => {
     resetForm()
     setIsAddWalletOpen(true)
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -185,7 +124,7 @@ export default function WalletPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
         {/* Search and Filter Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-lg p-3 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full md:w-auto">
+          {/* <div className="relative w-full md:w-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Search wallets..."
@@ -193,10 +132,11 @@ export default function WalletPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+          </div> */}
+          <h1 className="text-2xl text-white font-semibold">All Wallets</h1>
 
           <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-            <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
+            {/* <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
               <TabsList className="bg-gray-800/50 border border-gray-700">
                 <TabsTrigger value="all" className="data-[state=active]:bg-blue-600">
                   All
@@ -208,7 +148,7 @@ export default function WalletPage() {
                   Inactive
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
+            </Tabs> */}
 
             <Button
               onClick={openAddWalletModal}
@@ -283,276 +223,7 @@ export default function WalletPage() {
       </main>
 
       {/* Add/Edit Wallet Dialog */}
-      <Dialog open={isAddWalletOpen} onOpenChange={setIsAddWalletOpen}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{isEditing ? "Edit Wallet" : "Add New Wallet"}</DialogTitle>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-            <div className="space-y-6">
-              {/* Left Column */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="type" className="text-gray-300">
-                    Wallet Type
-                  </Label>
-                  <div className="relative mt-1">
-                    <select
-                      id="type"
-                      value={newWallet.type}
-                      onChange={(e) => setNewWallet({ ...newWallet, type: e.target.value })}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="Cryptocurrency">Cryptocurrency</option>
-                      <option value="Bangladesh Mobile Banking">Bangladesh Mobile Banking</option>
-                      <option value="Bank Transfer">Bank Transfer</option>
-                      <option value="E-Wallet">E-Wallet</option>
-                      <option value="Fiat">Fiat</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="name" className="text-gray-300">
-                    Wallet Name
-                  </Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g., Bitcoin"
-                    value={newWallet.name}
-                    onChange={(e) => setNewWallet({ ...newWallet, name: e.target.value })}
-                    className="mt-1 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="symbol" className="text-gray-300">
-                    Currency Symbol
-                  </Label>
-                  <Input
-                    id="symbol"
-                    placeholder="e.g., BTC"
-                    value={newWallet.symbol}
-                    onChange={(e) => setNewWallet({ ...newWallet, symbol: e.target.value })}
-                    className="mt-1 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="address" className="text-gray-300">
-                    {newWallet.type === "Bangladesh Mobile Banking" ? "Mobile Number" : "Wallet Address"}
-                  </Label>
-                  <Input
-                    id="address"
-                    placeholder={
-                      newWallet.type === "Bangladesh Mobile Banking"
-                        ? "e.g., 01712345678"
-                        : newWallet.type === "Cryptocurrency"
-                          ? "e.g., bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-                          : "Enter address..."
-                    }
-                    value={newWallet.address}
-                    onChange={(e) => setNewWallet({ ...newWallet, address: e.target.value })}
-                    className="mt-1 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minDeposit" className="text-gray-300">
-                      Min Deposit
-                    </Label>
-                    <Input
-                      id="minDeposit"
-                      type="number"
-                      placeholder="0.001"
-                      value={newWallet.minDeposit}
-                      onChange={(e) => setNewWallet({ ...newWallet, minDeposit: Number.parseFloat(e.target.value) })}
-                      className="mt-1 bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="minWithdrawal" className="text-gray-300">
-                      Min Withdrawal
-                    </Label>
-                    <Input
-                      id="minWithdrawal"
-                      type="number"
-                      placeholder="0.002"
-                      value={newWallet.minWithdrawal}
-                      onChange={(e) => setNewWallet({ ...newWallet, minWithdrawal: Number.parseFloat(e.target.value) })}
-                      className="mt-1 bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="withdrawalFee" className="text-gray-300">
-                      Withdrawal Fee
-                    </Label>
-                    <Input
-                      id="withdrawalFee"
-                      type="number"
-                      placeholder="0.0005"
-                      value={newWallet.withdrawalFee}
-                      onChange={(e) => setNewWallet({ ...newWallet, withdrawalFee: Number.parseFloat(e.target.value) })}
-                      className="mt-1 bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="processingTime" className="text-gray-300">
-                      Processing Time
-                    </Label>
-                    <Input
-                      id="processingTime"
-                      placeholder="e.g., 10-30 minutes"
-                      value={newWallet.processingTime}
-                      onChange={(e) => setNewWallet({ ...newWallet, processingTime: e.target.value })}
-                      className="mt-1 bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* Right Column */}
-              <div>
-                <Label htmlFor="description" className="text-gray-300">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Write a description about the wallet..."
-                  value={newWallet.description}
-                  onChange={(e) => setNewWallet({ ...newWallet, description: e.target.value })}
-                  className="mt-1 bg-gray-700 border-gray-600 text-white h-20"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="instructions" className="text-gray-300">
-                  Instructions
-                </Label>
-                <Textarea
-                  id="instructions"
-                  placeholder="Instructions for users when using this wallet..."
-                  value={newWallet.instructions}
-                  onChange={(e) => setNewWallet({ ...newWallet, instructions: e.target.value })}
-                  className="mt-1 bg-gray-700 border-gray-600 text-white h-20"
-                />
-              </div>
-
-              <div>
-                <h3 className="text-gray-300 mb-2">Transaction Types</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <ArrowDownCircle className="h-5 w-5 text-green-500" />
-                      <Label htmlFor="allowDeposit" className="text-gray-300">
-                        Allow Deposit
-                      </Label>
-                    </div>
-                    <Switch
-                      id="allowDeposit"
-                      checked={newWallet.allowDeposit}
-                      onCheckedChange={(checked) => setNewWallet({ ...newWallet, allowDeposit: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <ArrowUpCircle className="h-5 w-5 text-red-500" />
-                      <Label htmlFor="allowWithdrawal" className="text-gray-300">
-                        Allow Withdrawal
-                      </Label>
-                    </div>
-                    <Switch
-                      id="allowWithdrawal"
-                      checked={newWallet.allowWithdrawal}
-                      onCheckedChange={(checked) => setNewWallet({ ...newWallet, allowWithdrawal: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-gray-300 block mb-2">Wallet Logo</Label>
-                <div className="flex items-center space-x-4">
-                  <div className="h-20 w-20 rounded-lg bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden">
-                    {newWallet.logo ? (
-                      <img
-                        src={newWallet.logo || "/placeholder.svg"}
-                        alt="Logo preview"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-gray-400 text-xs text-center">No Logo</span>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleLogoUpload}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Select Logo
-                  </Button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="active" className="text-gray-300">
-                    Active
-                  </Label>
-                  <Info className="h-4 w-4 text-gray-400" />
-                </div>
-                <Switch
-                  id="active"
-                  checked={newWallet.active}
-                  onCheckedChange={(checked) => setNewWallet({ ...newWallet, active: checked })}
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsAddWalletOpen(false)
-                resetForm()
-              }}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700 w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAddWallet}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto"
-            >
-              {isEditing ? "Save Changes" : "Add Wallet"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+     <AddWalletForm open={isAddWalletOpen} onOpenChange={() => setIsAddWalletOpen(false)} setIsAddWalletOpen={setIsAddWalletOpen}/>
     </div>
   )
 }

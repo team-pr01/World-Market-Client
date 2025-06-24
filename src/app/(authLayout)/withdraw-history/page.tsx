@@ -22,26 +22,22 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/reusable/Button/Button";
-import {
-  useGetAllWithdrawalsQuery,
-} from "@/redux/Features/User/userApi";
-
-const getStatusBadgeClasses = "deposit";
+import { useGetAllWithdrawalsQuery } from "@/redux/Features/User/userApi";
 
 export default function WithdrawHistoryPage() {
-
-  const { data: withdraws, isLoading } = useGetAllWithdrawalsQuery({
-    page: 1,
-    search: "",
-    status: "",
-  });
-  console.log(withdraws);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  // const [typeFilter, setTypeFilter] = useState<
-  //   "all" | "deposit" | "withdrawal"
-  // >("all");
+
+  const {
+    data: withdraws,
+    isLoading,
+    isFetching,
+  } = useGetAllWithdrawalsQuery({
+    page: 1,
+    search: searchTerm,
+    status: statusFilter,
+  });
+  console.log(withdraws);
 
   if (isLoading) {
     return (
@@ -54,7 +50,6 @@ export default function WithdrawHistoryPage() {
 
   const TransactionCard = ({ tx }: { tx: any }) => {
     const isDeposit = tx.type === "deposit";
-    const amount = tx.amount;
 
     return (
       <Card className="bg-slate-800/70 border-slate-700 text-slate-200 shadow-lg hover:shadow-purple-500/20 transition-shadow">
@@ -68,7 +63,7 @@ export default function WithdrawHistoryPage() {
               )}
               {isDeposit ? "Deposit" : "Withdrawal"}
             </CardTitle>
-            <Badge className={getStatusBadgeClasses}>{status}</Badge>
+            <Badge>{tx?.status}</Badge>
             {/* <Badge className={cn("text-xs", getStatusBadgeClasses(status, tx.type))}>{status}</Badge> */}
           </div>
         </CardHeader>
@@ -77,34 +72,24 @@ export default function WithdrawHistoryPage() {
             <span className="text-slate-400">Amount:</span>
             <span className="font-semibold text-lg">
               {isDeposit ? "" : "-"}
-              {amount?.toFixed(2)} $
+              {tx?.amount?.toFixed(2)} {tx?.currency?.toUpperCase()}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Method:</span>
-            <span>Wallet Name</span>
+            <span>{tx?.payment_method}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Date:</span>
-            <span>25 June,2025</span>
+            <span>{new Date(tx.created_at).toLocaleDateString()}</span>
             {/* <span>{format(new Date(date), "PPpp")}</span> */}
           </div>
-          {isDeposit && (
-            <div className="flex justify-between">
-              <span className="text-slate-400">Transaction ID:</span>
-              <span className="font-mono text-xs truncate max-w-[150px]">
-                Transaction id
-              </span>
-            </div>
-          )}
-          {!isDeposit && (
-            <div className="flex justify-between">
-              <span className="text-slate-400">Request ID:</span>
-              <span className="font-mono text-xs truncate max-w-[150px]">
-                Withdraw id
-              </span>
-            </div>
-          )}
+          <div className="flex justify-between">
+            <span className="text-slate-400">Transaction ID:</span>
+            <span className="font-mono text-xs truncate max-w-[150px]">
+              {tx?.transaction_id}
+            </span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -205,35 +190,40 @@ export default function WithdrawHistoryPage() {
           </div>
         </Card>
 
-        {withdraws?.data?.withdraws?.length === 0 ? (
+        {isFetching ? (
+          <div className="text-slate-100 flex flex-col items-center justify-center p-4">
+            <RefreshCw
+              size={48}
+              className="animate-spin text-purple-400 mb-4"
+            />
+            <p className="text-xl">Loading Transaction History...</p>
+          </div>
+        ) : withdraws?.data?.withdraws?.length === 0 ? (
           <Card className="bg-slate-800/50 backdrop-blur-md shadow-xl border-slate-700 text-center py-16">
             <CardContent className="flex flex-col items-center">
               <Info className="mx-auto h-16 w-16 text-slate-500 mb-6" />
               <p className="text-slate-300 text-xl font-semibold">
-                No Deposits Found
+                No Withdrawals Found
               </p>
               <p className="text-slate-400 mt-2">
-                {withdraws?.data?.withdraws?.length > 0 &&
-                (searchTerm || statusFilter !== "all")
+                {searchTerm || statusFilter !== "all"
                   ? "No transactions match your current filters."
-                  : "You haven't made any transactions yet."}
+                  : "You haven't made any withdrawals yet."}
               </p>
-              {withdraws?.data?.withdraws?.length === 0 && (
-                <div className="mt-6 space-x-4">
-                  <Button
-                    onClick={() => (window.location.href = "/withdrawal")}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                    Request Withdrawal
-                  </Button>
-                </div>
-              )}
+              <div className="mt-6 space-x-4">
+                <Button
+                  onClick={() => (window.location.href = "/withdrawal")}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Request Withdrawal
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {withdraws?.data?.withdraws?.map((tx:any) => (
-              <TransactionCard key={tx} tx={tx} />
+            {withdraws?.data?.withdraws?.map((tx: any) => (
+              <TransactionCard key={tx._id} tx={tx} />
             ))}
           </div>
         )}

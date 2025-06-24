@@ -83,16 +83,15 @@ const adminApi = baseApi.injectEndpoints({
       }),
       providesTags: ["user"],
     }),
-getAllUser: builder.query({
-  query: (params) => ({
-    url: "/admin/users",
-    method: "GET",
-    credentials: "include",
-    params, // this will serialize query params automatically
-  }),
-  providesTags: ["user"],
-}),
-
+    getAllUser: builder.query({
+      query: (params) => ({
+        url: "/admin/users",
+        method: "GET",
+        credentials: "include",
+        params,
+      }),
+      providesTags: ["user"],
+    }),
 
     getSingleUserById: builder.query({
       query: (id) => ({
@@ -101,6 +100,25 @@ getAllUser: builder.query({
         credentials: "include",
       }),
       providesTags: ["user"],
+    }),
+
+     getAllPaymentMethods: builder.query({
+      query: () => ({
+        url: "/admin/payment-method",
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: ["user"],
+    }),
+
+     addPaymentMethod: builder.mutation({
+      query: (data) => ({
+        url: `/admin/payment-method/payment-method`,
+        method: "POST",
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
     }),
   }),
 });
@@ -117,4 +135,6 @@ export const {
   useGetWithdrawByIDQuery,
   useGetAllUserQuery,
   useGetSingleUserByIdQuery,
+  useGetAllPaymentMethodsQuery,
+  useAddPaymentMethodMutation,
 } = adminApi;
