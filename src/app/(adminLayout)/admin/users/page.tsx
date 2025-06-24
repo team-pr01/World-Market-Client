@@ -8,6 +8,7 @@ import {
   Users,
   Search,
   ArrowLeft,
+  RefreshCw,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/reusable/Button/Button"
@@ -16,8 +17,7 @@ import UserCard from "./_components/UserCard"
 
 export default function AdminUserAccountsPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const {data} = useGetAllUserQuery({ search: searchTerm});
-  console.log(data, "all users data");
+  const {data, isLoading} = useGetAllUserQuery({ search: searchTerm});
   const router = useRouter()
 
   const handleLogout = () => {
@@ -70,7 +70,17 @@ export default function AdminUserAccountsPage() {
 
       {/* User Cards Grid */}
       <main className="max-w-7xl mx-auto">
-        {data?.data?.users?.length > 0 ? (
+        {
+        isLoading ?
+        <div className="text-slate-100 flex flex-col items-center justify-center p-4">
+            <RefreshCw
+              size={48}
+              className="animate-spin text-purple-400 mb-4"
+            />
+            <p className="text-xl">Loading Transaction History...</p>
+          </div>
+          :
+        data?.data?.users?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {data?.data?.users?.map((user: any, index:number) => (
               <UserCard key={index} user={user} />

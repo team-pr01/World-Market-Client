@@ -12,14 +12,31 @@ const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["user"],
     }),
 
-    getAllDeposits: builder.query({
-      query: () => ({
-        url: "/admin/deposit",
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["user"],
-    }),
+   getAllDeposits: builder.query({
+  query: (params = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+    } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+
+    if (search) queryParams.append("search", search);
+    if (status && status !== "all") queryParams.append("status", status);
+
+    return {
+      url: `/admin/deposit?${queryParams.toString()}`,
+      method: "GET",
+      credentials: "include",
+    };
+  },
+  providesTags: ["user"],
+}),
+
 
     getDepositByID: builder.query({
       query: (id) => ({
@@ -33,7 +50,7 @@ const adminApi = baseApi.injectEndpoints({
     approveDeposit: builder.mutation({
       query: (id) => ({
         url: `/admin/deposit/${id}/approve`,
-        method: "POST",
+        method: "PUT",
         credentials: "include",
       }),
       invalidatesTags: ["user"],

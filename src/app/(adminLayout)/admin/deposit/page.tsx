@@ -17,6 +17,7 @@ import {
   CreditCard,
   DollarSign,
   FileText,
+  RefreshCw,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,21 +29,18 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/reusable/Button/Button"
-import { useApproveDepositMutation, useGetAllDepositsQuery, useGetDepositByIDQuery, useRejectDepositMutation } from "@/redux/Features/Admin/adminApi"
+import { useApproveDepositMutation, useGetAllDepositsQuery, useRejectDepositMutation } from "@/redux/Features/Admin/adminApi"
 
 export default function DepositPage() {
   const [approveDeposit] = useApproveDepositMutation();
   const [rejectDeposit] = useRejectDepositMutation();
-  const {data} = useGetAllDepositsQuery({});
-  const [selectedDepositId, setSelectedDepositId] = useState<any | string>("");
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<any | "all">("all")
+  const {data, isLoading, isFetching} = useGetAllDepositsQuery({search : searchTerm, status: statusFilter});
   const [selectedDeposit, setSelectedDeposit] = useState<any | null>(null);
-  const {data:singleDepositData} = useGetDepositByIDQuery(selectedDepositId);
-  console.log(singleDepositData);
   console.log(selectedDeposit, "selected deposit");
   const router = useRouter();
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<any | "all">("all")
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const isProcessing = false
 
@@ -154,7 +152,17 @@ export default function DepositPage() {
             </div>
 
             {/* Deposits Table */}
-            {data?.data?.deposits?.length > 0 ? (
+            {
+            isLoading || isFetching ?
+            <div className="text-slate-100 flex flex-col items-center justify-center p-4">
+                        <RefreshCw
+                          size={48}
+                          className="animate-spin text-purple-400 mb-4"
+                        />
+                        <p className="text-xl">Loading Transaction History...</p>
+                      </div>
+                      :
+            data?.data?.deposits?.length > 0 ? (
               <div className="rounded-md border border-gray-700 overflow-hidden">
                 <Table>
                   <TableHeader className="bg-gray-800">
@@ -311,9 +319,9 @@ export default function DepositPage() {
                           </div>
                         </div>
                         <div>
-                          <Label className="text-gray-400 text-sm">Transaction ID</Label>
+                          <Label className="text-gray-400 text-sm">Sender Address</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
-                            <span className="text-white">{selectedDeposit.transactionId}</span>
+                            <span className="text-white">{selectedDeposit.sender_address}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -401,7 +409,7 @@ export default function DepositPage() {
                     <Button
                       type="button"
                       variant="destructive"
-                      // onClick={handleRejectDeposit(selectedDeposit.id)}
+                      onClick={() => handleRejectDeposit(selectedDeposit._id)}
                       disabled={isProcessing}
                       className="bg-red-600 hover:bg-red-700 text-white"
                     >
@@ -410,7 +418,7 @@ export default function DepositPage() {
                     </Button>
                     <Button
                       type="button"
-                      // onClick={handleApproveDeposit(selectedDeposit.id)}
+                      onClick={() => handleApproveDeposit(selectedDeposit._id)}
                       disabled={isProcessing}
                       className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                     >
