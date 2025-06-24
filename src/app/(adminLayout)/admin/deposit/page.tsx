@@ -17,7 +17,6 @@ import {
   CreditCard,
   DollarSign,
   FileText,
-  ImageIcon,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -25,37 +24,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
+// import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/reusable/Button/Button"
+import { useApproveDepositMutation, useGetAllDepositsQuery, useGetDepositByIDQuery, useRejectDepositMutation } from "@/redux/Features/Admin/adminApi"
 
 export default function DepositPage() {
-  const router = useRouter()
+  const [approveDeposit] = useApproveDepositMutation();
+  const [rejectDeposit] = useRejectDepositMutation();
+  const {data} = useGetAllDepositsQuery({});
+  const [selectedDepositId, setSelectedDepositId] = useState<any | string>("");
+  const [selectedDeposit, setSelectedDeposit] = useState<any | null>(null);
+  const {data:singleDepositData} = useGetDepositByIDQuery(selectedDepositId);
+  console.log(singleDepositData);
+  console.log(selectedDeposit, "selected deposit");
+  const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<any | "all">("all")
-  const [selectedDeposit, setSelectedDeposit] = useState<any | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [adminNotes, setAdminNotes] = useState("")
   const isProcessing = false
-
-  // Filter deposits based on search and status
-  const filteredDeposits: any[] = [1,2,3,4]
-  const allDeposits: any[] = [1,2,3,4,5,6,7]
 
   const handleViewDetails = (deposit: any) => {
     setSelectedDeposit(deposit)
-    setAdminNotes(deposit.adminNotes || "")
     setIsDetailsOpen(true)
   }
 
-  const handleApproveDeposit = () => {
-    // Perform approval action
+  const handleApproveDeposit = async (id:string) => {
+    try{
+      await approveDeposit(id).unwrap();
+    } catch (error){
+      console.log(error);
+    }
   }
 
-  const handleRejectDeposit = () => {
-    // Perform reject action
+  const handleRejectDeposit = async (id:string) => {
+    try{
+      await rejectDeposit(id).unwrap();
+    } catch (error){
+      console.log(error);
+    }
   }
   
 
@@ -145,28 +154,30 @@ export default function DepositPage() {
             </div>
 
             {/* Deposits Table */}
-            {filteredDeposits.length > 0 ? (
+            {data?.data?.deposits?.length > 0 ? (
               <div className="rounded-md border border-gray-700 overflow-hidden">
                 <Table>
                   <TableHeader className="bg-gray-800">
                     <TableRow className="hover:bg-gray-800/80 border-gray-700">
                       <TableHead className="text-gray-400">User</TableHead>
+                      <TableHead className="text-gray-400">Email</TableHead>
                       <TableHead className="text-gray-400">Amount</TableHead>
-                      <TableHead className="text-gray-400">Method</TableHead>
+                      <TableHead className="text-gray-400">Payment Method</TableHead>
                       <TableHead className="text-gray-400">Date</TableHead>
                       <TableHead className="text-gray-400">Status</TableHead>
                       <TableHead className="text-gray-400 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredDeposits.map((deposit) => (
-                      <TableRow key={deposit.id} className="hover:bg-gray-800/50 border-gray-700">
-                        <TableCell className="font-medium text-white">{deposit.username}</TableCell>
+                    {data?.data?.deposits?.map((deposit:any, index:number) => (
+                      <TableRow key={index} className="hover:bg-gray-800/50 border-gray-700">
+                        <TableCell className="font-medium text-white">{deposit?.user_id?.username}</TableCell>
+                        <TableCell className="font-medium text-white">{deposit?.user_id?.email}</TableCell>
                         <TableCell className="text-white">
                           {deposit.amount} {deposit.currency}
                         </TableCell>
-                        <TableCell className="text-gray-300">{deposit.walletName}</TableCell>
-                        <TableCell className="text-gray-300">25 Mar 2023</TableCell>
+                        <TableCell className="text-gray-300">{deposit.payment_method}</TableCell>
+                        <TableCell className="text-gray-300">{new Date(deposit.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>{getStatusBadge(deposit.status)}</TableCell>
                         <TableCell className="text-right">
                           <Button
@@ -189,7 +200,7 @@ export default function DepositPage() {
                 <ArrowDownCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-400 mb-2">No Deposit Requests</h2>
                 <p className="text-gray-500">
-                  {allDeposits.length === 0
+                  {data?.data?.deposits?.length === 0
                     ? "There are no deposit requests yet."
                     : "No deposit requests match your filters."}
                 </p>
@@ -213,9 +224,9 @@ export default function DepositPage() {
                   <TabsTrigger value="details" className="data-[state=active]:bg-blue-600">
                     Details
                   </TabsTrigger>
-                  <TabsTrigger value="screenshot" className="data-[state=active]:bg-blue-600">
+                  {/* <TabsTrigger value="screenshot" className="data-[state=active]:bg-blue-600">
                     Screenshot
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                 </TabsList>
 
                 <TabsContent value="details" className="mt-0">
@@ -231,15 +242,15 @@ export default function DepositPage() {
                         <div>
                           <Label className="text-gray-400 text-sm">Username</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
-                            <span className="text-white">{selectedDeposit.username}</span>
+                            <span className="text-white">{selectedDeposit?.user_id?.username}</span>
                           </div>
                         </div>
-                        <div>
+                        {/* <div>
                           <Label className="text-gray-400 text-sm">User ID</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
                             <span className="text-white">{selectedDeposit.userId}</span>
                           </div>
-                        </div>
+                        </div> */}
                       </CardContent>
                     </Card>
 
@@ -254,13 +265,7 @@ export default function DepositPage() {
                         <div>
                           <Label className="text-gray-400 text-sm">Created At</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
-                            <span className="text-white">25 May 2023</span>
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-gray-400 text-sm">Last Updated</Label>
-                          <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
-                            <span className="text-white">25 May 2023</span>
+                            <span className="text-white">{new Date(selectedDeposit.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -277,15 +282,15 @@ export default function DepositPage() {
                         <div>
                           <Label className="text-gray-400 text-sm">Wallet Name</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
-                            <span className="text-white">{selectedDeposit.walletName}</span>
+                            <span className="text-white">{selectedDeposit.payment_method}</span>
                           </div>
                         </div>
-                        <div>
+                        {/* <div>
                           <Label className="text-gray-400 text-sm">Wallet Type</Label>
                           <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
                             <span className="text-white">{selectedDeposit.walletType}</span>
                           </div>
-                        </div>
+                        </div> */}
                       </CardContent>
                     </Card>
 
@@ -328,7 +333,7 @@ export default function DepositPage() {
                             <span className="text-white">{getStatusBadge(selectedDeposit.status)}</span>
                           </div>
                         </div>
-                        {selectedDeposit.notes && (
+                        {/* {selectedDeposit.notes && (
                           <div>
                             <Label className="text-gray-400 text-sm">User Notes</Label>
                             <div className="bg-gray-800/50 rounded-md p-2 border border-gray-600 mt-1">
@@ -348,13 +353,13 @@ export default function DepositPage() {
                             className="bg-gray-800/50 border-gray-600 text-white h-20 mt-1"
                             disabled={selectedDeposit.status !== "pending"}
                           />
-                        </div>
+                        </div> */}
                       </CardContent>
                     </Card>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="screenshot" className="mt-0">
+                {/* <TabsContent value="screenshot" className="mt-0">
                   <Card className="bg-gray-700/50 border-gray-600">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg text-white flex items-center">
@@ -379,7 +384,7 @@ export default function DepositPage() {
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
+                </TabsContent> */}
               </Tabs>
 
               <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
@@ -396,7 +401,7 @@ export default function DepositPage() {
                     <Button
                       type="button"
                       variant="destructive"
-                      onClick={handleRejectDeposit}
+                      // onClick={handleRejectDeposit(selectedDeposit.id)}
                       disabled={isProcessing}
                       className="bg-red-600 hover:bg-red-700 text-white"
                     >
@@ -405,7 +410,7 @@ export default function DepositPage() {
                     </Button>
                     <Button
                       type="button"
-                      onClick={handleApproveDeposit}
+                      // onClick={handleApproveDeposit(selectedDeposit.id)}
                       disabled={isProcessing}
                       className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                     >

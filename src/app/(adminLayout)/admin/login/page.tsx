@@ -10,8 +10,12 @@ import { Button } from "@/components/reusable/Button/Button";
 import Cookies from "js-cookie";
 import { useForm } from "react-hook-form";
 import { useSigninAdminMutation } from "@/redux/Features/Admin/adminApi";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/Features/Auth/authSlice";
 
 export default function AdminLogin() {
+  const dispatch = useDispatch();
   const [signinAdmin, { isLoading }] = useSigninAdminMutation();
   const router = useRouter();
   const {
@@ -31,13 +35,20 @@ export default function AdminLogin() {
       const payload = {
         ...data,
       };
-      const response = await signinAdmin(payload);
-      console.log(response);
-      if (response?.data?.success) {
-        Cookies.set("accessToken", response?.data?.token, { expires: 7 });
+      const response = await signinAdmin(payload).unwrap();
+      if (response?.success) {
+        const accessToken = response?.token;
+        Cookies.set("accessToken", accessToken, { expires: 7 });
+        const user = response?.user;
+        dispatch(setUser({ user, token: accessToken }));
         router.push("/admin");
       }
     } catch (error) {
+      const errorMessage =
+        (error as any)?.data?.message ||
+        (error as any)?.message ||
+        "Login failed. Please try again.";
+      toast.error(errorMessage);
       console.error("Error during form submission:", error);
     }
   };
@@ -147,7 +158,7 @@ export default function AdminLogin() {
           {/* Additional Info */}
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
-              Protected area. Authorized personnel only.
+              Protected area. Authorized person only.
             </p>
           </div>
         </div>

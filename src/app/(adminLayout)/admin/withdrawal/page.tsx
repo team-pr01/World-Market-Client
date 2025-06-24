@@ -7,16 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/reusable/Button/Button"
+import { useApproveWithdrawMutation, useGetAllWithdrawalsQuery, useRejectWithdrawMutation } from "@/redux/Features/Admin/adminApi"
 
 export default function AdminWithdrawalPage() {
+  const [approveWithdraw] = useApproveWithdrawMutation();
+    const [rejectWithdraw] = useRejectWithdrawMutation();
+  const {data} = useGetAllWithdrawalsQuery({});
+  console.log(data);
   const router = useRouter()
-  const withdrawals= [1,2,3];
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const isProcessing = false;
-  const [adminNotes, setAdminNotes] = useState("")
   const [isMobile, setIsMobile] = useState(false)
 
   // Check if mobile
@@ -31,16 +33,23 @@ export default function AdminWithdrawalPage() {
 
   const handleViewDetails = (withdrawal: any) => {
     setSelectedWithdrawal(withdrawal)
-    setAdminNotes(withdrawal.adminNotes || "")
     setIsDetailsOpen(true)
   }
 
-  const handleApprove = async () => {
-    // console.log(object);
+ const handleApprove = async (id:string) => {
+    try{
+      await approveWithdraw(id).unwrap();
+    } catch (error){
+      console.log(error);
+    }
   }
 
-  const handleReject = async () => {
-    // console.log(object);
+  const handleReject = async (id:string) => {
+    try{
+      await rejectWithdraw(id).unwrap();
+    } catch (error){
+      console.log(error);
+    }
   }
 
   const getStatusBadge = (status:string) => {
@@ -60,8 +69,7 @@ export default function AdminWithdrawalPage() {
     return new Date(dateString).toLocaleString()
   }
 
-  const pendingWithdrawals:any[] = withdrawals.filter((w:any) => w.status === "pending")
-  const processedWithdrawals:any[] = withdrawals.filter((w:any) => w.status !== "pending")
+  const pendingWithdrawals:any[] = data?.data?.withdraws?.filter((w:any) => w.status === "pending")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -83,10 +91,10 @@ export default function AdminWithdrawalPage() {
             </div>
             <div className="ml-auto flex items-center gap-4">
               <div className="bg-yellow-500/20 rounded-lg px-3 py-1">
-                <span className="text-yellow-400 font-medium">Pending: {pendingWithdrawals.length}</span>
+                <span className="text-yellow-400 font-medium">Pending: {pendingWithdrawals?.length}</span>
               </div>
               <div className="bg-blue-500/20 rounded-lg px-3 py-1">
-                <span className="text-blue-400 font-medium">Total: {withdrawals.length}</span>
+                <span className="text-blue-400 font-medium">Total: {data?.data?.withdraws?.length}</span>
               </div>
             </div>
           </div>
@@ -95,7 +103,7 @@ export default function AdminWithdrawalPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {withdrawals.length === 0 ? (
+        {data?.data?.withdraws?.length === 0 ? (
           <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 p-8 text-center">
             <ArrowUpCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-400 mb-2">No Withdrawal Requests</h2>
@@ -104,39 +112,19 @@ export default function AdminWithdrawalPage() {
         ) : (
           <div className="space-y-8">
             {/* Pending Withdrawals */}
-            {pendingWithdrawals.length > 0 && (
+            {data?.data?.withdraws?.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
                   <Clock className="w-6 h-6 text-yellow-500 mr-2" />
-                  Pending Withdrawals ({pendingWithdrawals.length})
+                  Pending Withdrawals ({pendingWithdrawals?.length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {pendingWithdrawals.map((index,withdrawal) => (
+                  {data?.data?.withdraws?.map((withdrawal:any, index:number ) => (
                     <WithdrawalCard
                       key={index}
                       withdrawal={withdrawal}
                       onViewDetails={handleViewDetails}
                       isPending={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Processed Withdrawals */}
-            {processedWithdrawals.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <Check className="w-6 h-6 text-green-500 mr-2" />
-                  Processed Withdrawals ({processedWithdrawals.length})
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {processedWithdrawals.map((index,withdrawal) => (
-                    <WithdrawalCard
-                      key={index}
-                      withdrawal={withdrawal}
-                      onViewDetails={handleViewDetails}
-                      isPending={false}
                     />
                   ))}
                 </div>
@@ -167,13 +155,13 @@ export default function AdminWithdrawalPage() {
                     <div>
                       <Label className="text-gray-400 text-sm">Username</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white">{selectedWithdrawal.username}</span>
+                        <span className="text-white">{selectedWithdrawal?.user_id?.username}</span>
                       </div>
                     </div>
                     <div>
-                      <Label className="text-gray-400 text-sm">User ID</Label>
+                      <Label className="text-gray-400 text-sm">User Email</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white font-mono text-sm">{selectedWithdrawal.userId}</span>
+                        <span className="text-white font-mono text-sm">{selectedWithdrawal?.user_id.email}</span>
                       </div>
                     </div>
                   </div>
@@ -187,22 +175,22 @@ export default function AdminWithdrawalPage() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-gray-400 text-sm">Wallet Method</Label>
+                      <Label className="text-gray-400 text-sm">Payment Method</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white">{selectedWithdrawal.walletName}</span>
-                        <span className="text-gray-400 text-sm ml-2">({selectedWithdrawal.walletType})</span>
+                        <span className="text-white">{selectedWithdrawal.payment_method}</span>
+                        {/* <span className="text-gray-400 text-sm ml-2">({selectedWithdrawal.walletType})</span> */}
                       </div>
                     </div>
                     <div>
                       <Label className="text-gray-400 text-sm">Wallet ID/Address</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white font-mono text-sm">{selectedWithdrawal.walletId}</span>
+                        <span className="text-white font-mono text-sm">{selectedWithdrawal.receiver_address}</span>
                       </div>
                     </div>
                     <div>
                       <Label className="text-gray-400 text-sm">Withdrawal Amount</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white font-bold">${selectedWithdrawal?.amount?.toFixed(2) || 0}</span>
+                        <span className="text-white font-bold uppercase">{selectedWithdrawal?.amount?.toFixed(2) || 0}  {selectedWithdrawal?.currency}</span>
                       </div>
                     </div>
                     <div>
@@ -211,12 +199,12 @@ export default function AdminWithdrawalPage() {
                         <span className="text-red-400">${selectedWithdrawal?.fee?.toFixed(2) || 0}</span>
                       </div>
                     </div>
-                    <div>
+                    {/* <div>
                       <Label className="text-gray-400 text-sm">Net Amount (User Receives)</Label>
                       <div className="bg-green-500/20 rounded-md p-2 border border-green-500/30">
-                        <span className="text-green-400 font-bold">${selectedWithdrawal?.netAmount?.toFixed(2) || 0}</span>
+                        <span className="text-green-400 font-bold uppercase">{selectedWithdrawal?.netAmount?.toFixed(2) || 0} {selectedWithdrawal?.currency}</span>
                       </div>
-                    </div>
+                    </div> */}
                     <div>
                       <Label className="text-gray-400 text-sm">Status</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
@@ -236,7 +224,7 @@ export default function AdminWithdrawalPage() {
                     <div>
                       <Label className="text-gray-400 text-sm">Submitted At</Label>
                       <div className="bg-gray-700/50 rounded-md p-2 border border-gray-600">
-                        <span className="text-white text-sm">{formatDate(selectedWithdrawal.submittedAt)}</span>
+                        <span className="text-white text-sm">{new Date(selectedWithdrawal.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                     {selectedWithdrawal.processedAt && (
@@ -264,7 +252,7 @@ export default function AdminWithdrawalPage() {
                 )}
 
                 {/* Admin Notes */}
-                <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                {/* <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
                   <h3 className="text-lg font-medium text-white mb-3">Admin Notes</h3>
                   <Textarea
                     placeholder="Add notes about this withdrawal request..."
@@ -279,7 +267,7 @@ export default function AdminWithdrawalPage() {
                       <p className="text-white text-sm mt-1">{selectedWithdrawal.adminNotes}</p>
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 {/* Action Buttons */}
                 {selectedWithdrawal.status === "pending" && (
@@ -324,6 +312,9 @@ export default function AdminWithdrawalPage() {
 
 // Withdrawal Card Component
 function WithdrawalCard({ withdrawal, onViewDetails, isPending } : { withdrawal: any, onViewDetails: (withdrawal: any) => void, isPending: boolean }) {
+  console.log(withdrawal
+
+  );
   const getStatusBadge = (status: any) => {
     switch (status) {
       case "pending":
@@ -345,7 +336,7 @@ function WithdrawalCard({ withdrawal, onViewDetails, isPending } : { withdrawal:
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold text-white flex items-center">
             <User className="w-5 h-5 mr-2 text-blue-400" />
-            {withdrawal.username}
+            {withdrawal?.user_id?.username}
           </CardTitle>
           {getStatusBadge(withdrawal.status)}
         </div>
@@ -353,19 +344,19 @@ function WithdrawalCard({ withdrawal, onViewDetails, isPending } : { withdrawal:
       <CardContent className="space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-sm">Amount:</span>
-          <span className="text-white font-bold">${withdrawal?.amount?.toFixed(2) || 0}</span>
+          <span className="text-white font-bold uppercase">{withdrawal?.amount?.toFixed(2) || 0} {withdrawal?.currency}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-sm">Net Amount:</span>
-          <span className="text-green-400 font-bold">${withdrawal?.netAmount?.toFixed(2) || 0}</span>
+          <span className="text-gray-400 text-sm">Transaction Id:</span>
+          <span className="text-white text-sm">{withdrawal.transaction_id}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-sm">Method:</span>
-          <span className="text-white text-sm">{withdrawal.walletName}</span>
+          <span className="text-white text-sm">{withdrawal.payment_method}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-sm">Date:</span>
-          <span className="text-white text-sm">{new Date(withdrawal.submittedAt).toLocaleDateString()}</span>
+          <span className="text-white text-sm">{new Date(withdrawal.created_at).toLocaleDateString()}</span>
         </div>
         <Button
           onClick={() => onViewDetails(withdrawal)}

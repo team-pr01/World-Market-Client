@@ -38,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/reusable/Button/Button";
 import {
   useGetMeQuery,
+  useUpdateProfileImageMutation,
   useUpdateProfileMutation,
 } from "@/redux/Features/User/userApi";
 
@@ -53,8 +54,8 @@ const AccountPage = () => {
   const router = useRouter();
   const { data: profile } = useGetMeQuery({});
   console.log(profile);
-  const [updateProfile, { isLoading: isProfileUpdating }] =
-    useUpdateProfileMutation();
+  const [updateProfile, { isLoading: isProfileUpdating }] =useUpdateProfileMutation();
+  const [updateProfileImage] =useUpdateProfileImageMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -66,10 +67,21 @@ const AccountPage = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    console.log(file);
-  };
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const response = await updateProfileImage(formData).unwrap();
+    console.log("Image updated:", response);
+  } catch (error) {
+    console.error("Image upload failed:", error);
+  }
+};
+
 
   const openEditModal = (field: EditableField, currentValue?: string) => {
     setCurrentEditingField(field);
@@ -180,7 +192,7 @@ const AccountPage = () => {
         <div className="max-w-2xl mx-auto">
           <Card className="overflow-hidden shadow-xl bg-slate-800 border border-slate-700 rounded-xl">
             <CardHeader className="bg-slate-800/50 p-6 border-b border-slate-700">
-              <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
                 <div className="relative group">
                   <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-slate-700 shadow-md">
                     <AvatarImage
@@ -193,7 +205,7 @@ const AccountPage = () => {
                     <AvatarFallback className="text-4xl bg-slate-600 text-gray-200">
                       {profile?.user?.username
                         ? profile?.user?.username?.charAt(0).toUpperCase()
-                        : "U"}
+                        : ""}
                     </AvatarFallback>
                   </Avatar>
                   <input
@@ -291,8 +303,15 @@ const AccountPage = () => {
               <Separator className="mb-4 bg-slate-700" />
               <ProfileItem
                 icon={ListChecks}
-                label="Transaction History"
-                onClick={() => router.push("/transaction-history")}
+                label="Deposit History"
+                onClick={() => router.push("/deposit-history")}
+                isNavigation
+              />
+              <Separator className="mb-4 bg-slate-700" />
+              <ProfileItem
+                icon={ListChecks}
+                label="Withdraw History"
+                onClick={() => router.push("/withdraw-history")}
                 isNavigation
               />
               <Separator className="my-1 bg-slate-700/50" />

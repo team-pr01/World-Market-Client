@@ -8,8 +8,8 @@ import {
   LogOut,
   Shield,
   Users,
-  LifeBuoy,
-  Share2,
+  // LifeBuoy,
+  // Share2,
   LayoutDashboard,
 } from "lucide-react"
 import { Button } from "@/components/reusable/Button/Button"
@@ -59,21 +59,20 @@ export default function AdminDashboard() {
       color: "from-purple-500 to-purple-600",
       href: "/admin/users",
     },
-    {
-      // New Menu Item for Support Tickets
-      title: "Support Tickets",
-      description: "View and manage user support tickets",
-      icon: LifeBuoy,
-      color: "from-yellow-500 to-orange-600", // Example color
-      href: "/admin/support",
-    },
-    {
-      title: "Media Links",
-      description: "Manage social media and other links",
-      icon: Share2, // Using Share2 icon for media/sharing
-      color: "from-teal-500 to-cyan-600",
-      href: "/admin/media",
-    },
+    // {
+    //   title: "Support Tickets",
+    //   description: "View and manage user support tickets",
+    //   icon: LifeBuoy,
+    //   color: "from-yellow-500 to-orange-600", 
+    //   href: "/admin/support",
+    // },
+    // {
+    //   title: "Media Links",
+    //   description: "Manage social media and other links",
+    //   icon: Share2,
+    //   color: "from-teal-500 to-cyan-600",
+    //   href: "/admin/media",
+    // },
   ]
 
   return (

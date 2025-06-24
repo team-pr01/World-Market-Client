@@ -30,6 +30,24 @@ const adminApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
+    approveDeposit: builder.mutation({
+      query: (id) => ({
+        url: `/admin/deposit/${id}/approve`,
+        method: "POST",
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
+    rejectDeposit: builder.mutation({
+      query: (id) => ({
+        url: `/admin/deposit/${id}/reject`,
+        method: "POST",
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
     approveWithdraw: builder.mutation({
       query: (id) => ({
         url: `/admin/withdraw/${id}/approve`,
@@ -89,6 +107,13 @@ const adminApi = baseApi.injectEndpoints({
 export const {
   useSigninAdminMutation,
   useGetAllDepositsQuery,
+  useGetDepositByIDQuery,
+  useApproveDepositMutation,
+  useRejectDepositMutation,
+  useApproveWithdrawMutation,
+  useRejectWithdrawMutation,
+  useGetAllWithdrawalsQuery,
+  useGetWithdrawByIDQuery,
   useGetAllUserQuery,
   useGetSingleUserByIdQuery,
 } = adminApi;
