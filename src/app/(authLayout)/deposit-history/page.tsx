@@ -35,7 +35,6 @@ export default function DepositHistoryPage() {
     search: searchTerm,
     status: statusFilter,
   });
-  console.log(deposits);
 
   if (isLoading) {
     return (
