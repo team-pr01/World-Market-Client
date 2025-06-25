@@ -29,9 +29,11 @@ import {
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/reusable/Button/Button"
-import { cn } from "@/utils/utils"
+import Header from "./_components/Header"
+import LeftSidebar from "./_components/LeftSidebar"
+import RightSidebar from "./_components/RightSidebar"
+import TradingKlineChart from "./_components/TradingKlineChart"
 
-// Helper function to generate mock market data (assuming it's the same as previous version)
 const generateMockMarkets = () => {
   const markets = []
 
@@ -215,7 +217,7 @@ export default function TradingPlatform() {
             <button className="p-1">
               <MoreHorizontal size={20} />
             </button>
-            <BalanceSwitcher isMobile={true} />
+            {/* <BalanceSwitcher isMobile={true} /> */}
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -238,7 +240,7 @@ export default function TradingPlatform() {
 
         {/* Mobile Chart Area */}
         <div className="relative flex-1 min-h-0">
-          <QuotexChart symbol={selectedMarket.name} isMobile={true} />
+          <TradingKlineChart/>
         </div>
 
         {/* Mobile Market Selector */}
@@ -605,323 +607,18 @@ export default function TradingPlatform() {
   // Desktop View
   return (
     <div className="flex h-screen w-full flex-col bg-[#1C1F2A] text-white overflow-hidden">
-      
+      <Header/>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-[60px] flex-col items-center border-r border-gray-800 bg-[#1A1D27]">
-          <div className="flex w-full flex-col items-center">
-            <Link href="/">
-              <SidebarItem icon={<BarChart3 size={24} />} label="TRADE" active={router.pathname === "/"} />
-            </Link>
-            <Link href="/transaction-history">
-              {" "}
-              {/* Transaction History Link */}
-              <SidebarItem
-                icon={<ListChecks size={24} />}
-                label="HISTORY"
-                active={router.pathname === "/transaction-history"}
-              />
-            </Link>
-            <Link href="/trades-history">
-              <SidebarItem
-                icon={<ListFilter size={24} />}
-                label="TRADES"
-                active={router.pathname === "/trades-history"}
-              />
-            </Link>
-            <Link href="/support">
-              <SidebarItem icon={<LifeBuoy size={24} />} label="SUPPORT" active={router.pathname === "/support"} />
-            </Link>
-            <Link href="/account">
-              <SidebarItem icon={<User size={24} />} label="ACCOUNT" active={router.pathname === "/account"} />
-            </Link>
-            <SidebarItem icon={<Trophy size={24} />} label="TOURNAMENTS" badge="4" />
-            {/* <SidebarItem icon={<BarChart4 size={24} />} label="MARKET" /> */}
-            {/* <SidebarItem icon={<MoreHorizontal size={24} />} label="MORE" /> */}
-          </div>
-          <div className="mt-auto mb-4 flex flex-col items-center space-y-3 py-2">
-            {socialMediaItems.length > 0 &&
-              socialMediaItems.map((item) => {
-                const IconComponent = getIconComponentByName(item.iconName)
-                if (!IconComponent) {
-                  // Optional: Log a warning or render a default link icon if a specific icon is not found
-                  console.warn(`Icon not found for ${item.iconName}`)
-                  return null
-                }
-                return (
-                  <a
-                    key={item.id}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={item.name}
-                    aria-label={item.name}
-                    className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
-                  >
-                    <IconComponent size={20} />
-                  </a>
-                )
-              })}
-          </div>
-        </aside>
+        <LeftSidebar/>
 
         <main className="flex flex-1 overflow-hidden">
           <div className="relative flex-1 overflow-hidden">
-            <QuotexChart symbol={selectedMarket.name} isMobile={false} />
+            <TradingKlineChart/>
           </div>
-          <aside className="w-[240px] border-l border-gray-800 bg-[#1A1D27] overflow-y-auto">
-            <div className="p-3">
-              <div className="mb-4">
-                <div
-                  ref={marketDropdownTriggerDesktopRef}
-                  className="flex items-center p-2 rounded hover:bg-gray-800/50 cursor-pointer transition-colors"
-                  onClick={toggleMarketDropdown}
-                >
-                  <span className="mr-1 min-w-[24px] text-center">{selectedMarket.icon}</span>
-                  <span className="font-medium truncate max-w-[100px]">{selectedMarket.name}</span>
-                  <span className="ml-1 text-yellow-500">{selectedMarket.percentage}</span>
-                  <ChevronDown
-                    size={16}
-                    className={`ml-auto text-gray-400 transition-transform ${isMarketDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </div>
-                {isMarketDropdownOpen && (
-                  <div
-                    ref={dropdownRef}
-                    className="absolute right-[240px] top-16 mt-1 bg-[#1A1D27] border border-gray-800 rounded shadow-lg w-[400px] z-50"
-                  >
-                    <div className="p-3 border-b border-gray-800">
-                      <div className="relative mb-2">
-                        <Search
-                          size={16}
-                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Search markets..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full bg-[#252833] border border-gray-700 rounded py-2 pl-10 pr-3 text-sm focus:outline-none focus:border-blue-500"
-                        />
-                        {searchTerm && (
-                          <button
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                            onClick={() => setSearchTerm("")}
-                          >
-                            <X size={14} />
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {categories.map((category) => (
-                          <button
-                            key={category}
-                            className={`px-3 py-1 text-xs rounded-full ${activeCategory === category ? "bg-blue-500 text-white" : "bg-gray-800 text-gray-300"}`}
-                            onClick={() => setActiveCategory(category)}
-                          >
-                            {category}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="max-h-[400px] overflow-y-auto">
-                      {filteredMarkets.length > 0 ? (
-                        filteredMarkets.map((market) => (
-                          <div
-                            key={market.symbol}
-                            className={`flex items-center justify-between p-3 hover:bg-gray-800 ${selectedMarket.symbol === market.symbol ? "bg-gray-800" : ""}`}
-                          >
-                            <div
-                              className="flex items-center flex-grow cursor-pointer"
-                              onClick={() => selectMarketAndUpdateChart(market)}
-                            >
-                              <span className="mr-2 text-lg min-w-[24px] text-center">{market.icon}</span>
-                              <div className="flex-grow">
-                                <div className="font-medium truncate max-w-[200px]">{market.name}</div>
-                                <div className="text-xs text-gray-400">{market.category}</div>
-                              </div>
-                            </div>
-                            <div
-                              className="text-right mr-3 cursor-pointer"
-                              onClick={() => selectMarketAndUpdateChart(market)}
-                            >
-                              <div>{market.price}</div>
-                              <div className="text-yellow-500 text-sm">{market.percentage}</div>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                toggleFavorite(market.symbol)
-                              }}
-                              className="p-1 text-gray-400 hover:text-yellow-400"
-                              aria-label={market.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                            >
-                              <Star size={18} fill={market.isFavorite ? "currentColor" : "none"} />
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-gray-400">No markets found</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="mb-3">
-                <div className="text-sm text-gray-400 mb-1">Time</div>
-                <div className="flex h-10 items-center justify-center rounded border border-gray-700 bg-[#252833] px-3 py-2">
-                  <span className="font-medium">{selectedTimeLabel}</span>
-                </div>
-                <div className="text-center mt-1 relative">
-                  <button className="text-xs text-blue-400" onClick={toggleTimeDropdown}>
-                    SWITCH TIME
-                  </button>
-                  {isTimeDropdownOpen && (
-                    <div
-                      ref={timeDropdownRef}
-                      className="absolute top-full left-0 right-0 bg-[#252833] border border-gray-700 rounded shadow-lg z-50 mt-1 w-full"
-                    >
-                      {timeOptions.map((option) => (
-                        <div
-                          key={option.value}
-                          className={`flex items-center justify-between p-3 hover:bg-gray-700 cursor-pointer text-sm ${
-                            tradeTime === option.value ? "bg-blue-600 text-white" : "text-gray-300 hover:text-gray-100"
-                          }`}
-                          onClick={() => selectTime(option)}
-                        >
-                          <span>{option.label}</span>
-                          {tradeTime === option.value && <Check size={16} className="text-white" />}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="mb-3">
-                <div className="text-sm text-gray-400 mb-1">Investment</div>
-                <div className="relative">
-                  <div
-                    className="flex h-10 items-center justify-between rounded border border-gray-700 bg-[#252833] px-2 cursor-pointer"
-                    onClick={openInvestmentModal}
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                      }}
-                      className="text-gray-400 p-1"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span>{investment} $</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                      }}
-                      className="text-gray-400 p-1"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  {isInvestmentModalOpen && (
-                    <div
-                      ref={investmentModalRef}
-                      className="absolute top-full left-0 right-0 mt-1 p-3 bg-[#252833] border border-gray-700 rounded shadow-lg z-50"
-                    >
-                      <div className="mb-2">
-                        <input
-                          type="number"
-                          value={customInvestment}
-                          onChange={(e) => setCustomInvestment(e.target.value)}
-                          className="w-full bg-[#1C1F2A] border border-gray-700 rounded py-2 px-3 text-sm focus:outline-none focus:border-blue-500"
-                          placeholder="Enter amount"
-                          autoFocus
-                        />
-                      </div>
-                      <Button onClick={setCustomInvestmentAmount} className="w-full bg-blue-500 hover:bg-blue-600">
-                        Set Amount
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="mb-3">
-                <Button
-                  className="w-full h-12 bg-green-500 hover:bg-green-600 text-white"
-                //   onClick={() => placeTrade("up")}
-                >
-                  Up <ArrowUp className="ml-2" size={16} />
-                </Button>
-                <div className="text-center my-2">
-                  <span className="text-sm text-gray-400">Your payout: </span>
-                  <span className="font-bold">{payout} $</span>
-                </div>
-                <Button
-                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white"
-                //   onClick={() => placeTrade("down")}
-                >
-                  Down <ArrowDown className="ml-2" size={16} />
-                </Button>
-              </div>
-
-              <div className="rounded border border-gray-800 mt-4">
-                <div className="flex items-center justify-between border-b border-gray-800 p-3">
-                  <span className="font-medium text-white">Trades</span>
-                  <div className="flex items-center">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-xs text-gray-300 mr-2">
-                      {/* {tradesForPanel.filter((t) => t.status === "active").length} */}
-                      1
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3 max-h-[250px] overflow-y-auto space-y-2">
-                  {tradesForPanel.length > 0 ? (
-                    tradesForPanel.map((trade) => <TradeListItem key={trade.id} trade={trade} />)
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-6 text-center">
-                      <div className="mb-3 rounded-full bg-gray-800 p-3">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="3" y="16" width="5" height="5" rx="1" fill="#6B7280" />
-                          <rect x="10" y="10" width="5" height="11" rx="1" fill="#6B7280" />
-                          <rect x="17" y="4" width="5" height="17" rx="1" fill="#6B7280" />
-                        </svg>
-                      </div>
-                      <p className="mb-1 text-sm text-gray-200">You don't have any trades.</p>
-                      <p className="text-xs text-gray-400">Open a trade using the form above.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </aside>
+          <RightSidebar/>
         </main>
       </div>
-    </div>
-  )
-}
-
-function SidebarItem({
-  icon,
-  label,
-  active = false,
-  badge,
-}: { icon: React.ReactNode; label: string; active?: boolean; badge?: string }) {
-  return (
-    <div className="relative flex w-full flex-col items-center py-4 cursor-pointer hover:bg-gray-800/50 transition-colors">
-      <div
-        className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-md",
-          active ? "text-blue-400" : "text-gray-400 hover:text-gray-300",
-        )}
-      >
-        {icon}
-        {badge && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-xs">
-            {badge}
-          </span>
-        )}
-      </div>
-      <span className="mt-1 text-[10px] font-medium">{label}</span>
-      {active && <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />}
     </div>
   )
 }

@@ -140,6 +140,34 @@ const adminApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["user"],
     }),
+
+    getAllSymbols: builder.query({
+      query: () => ({
+        url: "/admin/symbols",
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: ["user"],
+    }),
+
+    addPairMarket: builder.mutation({
+      query: (data) => ({
+        url: `/admin/symbols`,
+        method: "POST",
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
+    deletePairMarket: builder.mutation({
+      query: (id) => ({
+        url: `/admin/symbols/${id}`,
+        method: "DELETE",
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
   }),
 });
 
@@ -158,4 +186,7 @@ export const {
   useGetAllPaymentMethodsQuery,
   useAddPaymentMethodMutation,
   useDeletePaymentMethodMutation,
+  useGetAllSymbolsQuery,
+  useAddPairMarketMutation,
+  useDeletePairMarketMutation,
 } = adminApi;

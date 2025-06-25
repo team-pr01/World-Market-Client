@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/reusable/Button/Button";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -39,12 +39,6 @@ const Header = () => {
         </span>
       </div>
       <div className="flex items-center">
-        <div className="relative mr-4">
-          <Bell size={20} />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs">
-            1
-          </span>
-        </div>
         {/* <BalanceSwitcher className="mr-4" /> */}
         <Button
           className="bg-green-500 hover:bg-green-600 mr-2"

@@ -69,6 +69,13 @@ const handleLogout = async () => {
       color: "from-purple-500 to-purple-600",
       href: "/admin/users",
     },
+    {
+      title: "Pair Markets",
+      description: "View and manage pair markets",
+      icon: Users,
+      color: "from-purple-500 to-purple-600",
+      href: "/admin/pair-markets",
+    },
     // {
     //   title: "Support Tickets",
     //   description: "View and manage user support tickets",
