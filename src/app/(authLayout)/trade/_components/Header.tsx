@@ -42,15 +42,14 @@ const Header = () => {
         {/* <BalanceSwitcher className="mr-4" /> */}
         <Button
           className="bg-green-500 hover:bg-green-600 mr-2"
-          onClick={() => router.push("/deposit")}
+          onClick={() => router.push("/deposit-history")}
         >
           Deposit
         </Button>
         <Button
           variant="outline"
           className="border-gray-700 text-white hover:bg-gray-700 mr-2"
-          onClick={() => router.push("/withdrawal")}
-        >
+          onClick={() => router.push("/withdraw-history")}>
           Withdrawal
         </Button>
         <button

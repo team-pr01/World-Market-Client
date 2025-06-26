@@ -31,8 +31,8 @@ const UserCard = ({user} : {user:any}) => {
           </AvatarFallback>
         </Avatar>
         <div>
-          <CardTitle className="text-xl font-semibold text-purple-400">{user.username}</CardTitle>
-          <p className="text-xs text-gray-400">ID: {user.displayId}</p>
+          <CardTitle className="text-xl font-semibold text-purple-400">{user.name}</CardTitle>
+          <p className="text-xs text-gray-400">Username: {user.username}</p>
         </div>
       </CardHeader>
       <CardContent className="p-4 space-y-3 text-sm flex-grow">

@@ -1,12 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   BarChart3,
   LifeBuoy,
   User,
-  Trophy,
   MoreHorizontal,
   Plus,
   Minus,
@@ -33,121 +32,8 @@ import Header from "./_components/Header"
 import LeftSidebar from "./_components/LeftSidebar"
 import RightSidebar from "./_components/RightSidebar"
 import TradingKlineChart from "./_components/TradingKlineChart"
-
-const generateMockMarkets = () => {
-  const markets = []
-
-  // Forex Data (50 markets)
-  const forexPairs = [
-    { name: "EUR/USD", icon: "🇪🇺🇺🇸", price: (1.05 + Math.random() * 0.1).toFixed(4) },
-    { name: "GBP/USD", icon: "🇬🇧🇺🇸", price: (1.2 + Math.random() * 0.1).toFixed(4) },
-    { name: "USD/JPY", icon: "🇺🇸🇯🇵", price: (140 + Math.random() * 20).toFixed(2) },
-    { name: "AUD/USD", icon: "🇦🇺🇺🇸", price: (0.63 + Math.random() * 0.05).toFixed(4) },
-    { name: "USD/CAD", icon: "🇺🇸🇨🇦", price: (1.35 + Math.random() * 0.05).toFixed(4) },
-    { name: "USD/CHF", icon: "🇺🇸🇨🇭", price: (0.9 + Math.random() * 0.05).toFixed(4) },
-    { name: "NZD/USD", icon: "🇳🇿🇺🇸", price: (0.58 + Math.random() * 0.05).toFixed(4) },
-    { name: "EUR/GBP", icon: "🇪🇺🇬🇧", price: (0.85 + Math.random() * 0.05).toFixed(4) },
-    { name: "EUR/JPY", icon: "🇪🇺🇯🇵", price: (150 + Math.random() * 10).toFixed(2) },
-    { name: "GBP/JPY", icon: "🇬🇧🇯🇵", price: (170 + Math.random() * 10).toFixed(2) },
-    { name: "AUD/JPY", icon: "🇦🇺🇯🇵", price: (90 + Math.random() * 10).toFixed(2) },
-    { name: "CAD/JPY", icon: "🇨🇦🇯🇵", price: (100 + Math.random() * 10).toFixed(2) },
-    { name: "CHF/JPY", icon: "🇨🇭🇯🇵", price: (160 + Math.random() * 10).toFixed(2) },
-    { name: "EUR/AUD", icon: "🇪🇺🇦🇺", price: (1.6 + Math.random() * 0.1).toFixed(4) },
-    { name: "EUR/CAD", icon: "🇪🇺🇨🇦", price: (1.4 + Math.random() * 0.1).toFixed(4) },
-    { name: "EUR/CHF", icon: "🇪🇺🇨🇭", price: (0.95 + Math.random() * 0.05).toFixed(4) },
-    { name: "GBP/AUD", icon: "🇬🇧🇦🇺", price: (1.9 + Math.random() * 0.1).toFixed(4) },
-    { name: "GBP/CAD", icon: "🇬🇧🇨🇦", price: (1.7 + Math.random() * 0.1).toFixed(4) },
-    { name: "GBP/CHF", icon: "🇬🇧🇨🇭", price: (1.1 + Math.random() * 0.1).toFixed(4) },
-    { name: "AUD/CAD", icon: "🇦🇺🇨🇦", price: (0.9 + Math.random() * 0.05).toFixed(4) },
-  ]
-  for (let i = 0; i < 50; i++) {
-    const pair = forexPairs[i % forexPairs.length]
-    markets.push({
-      ...pair,
-      name: i < forexPairs.length ? pair.name : `${pair.name} v${Math.floor(i / forexPairs.length)}`,
-      symbol: `${pair.name.replace("/", "")}${i}`,
-      percentage: `${Math.floor(Math.random() * 10 + 85)}%`,
-      category: "Forex",
-      isFavorite: false,
-    })
-  }
-
-  const otcAssets = [
-    { name: "EUR/USD (OTC)", icon: "🇪🇺🇺🇸", price: (1.06 + Math.random() * 0.1).toFixed(4) },
-    { name: "Gold (OTC)", icon: "🥇", price: (1900 + Math.random() * 200).toFixed(2) },
-    { name: "Oil (OTC)", icon: "🛢️", price: (70 + Math.random() * 20).toFixed(2) },
-    { name: "Silver (OTC)", icon: "🥈", price: (20 + Math.random() * 5).toFixed(2) },
-    { name: "Alibaba (OTC)", icon: "🇨🇳", price: (80 + Math.random() * 20).toFixed(2) },
-    { name: "AUD/CAD (OTC)", icon: "🇦🇺🇨🇦", price: (0.91 + Math.random() * 0.05).toFixed(4) },
-    { name: "USD/MXN (OTC)", icon: "🇺🇸🇲🇽", price: (17 + Math.random() * 2).toFixed(2) },
-  ]
-  for (let i = 0; i < 60; i++) {
-    const asset = otcAssets[i % otcAssets.length]
-    markets.push({
-      ...asset,
-      name:
-        i < otcAssets.length
-          ? asset.name
-          : `${asset.name.replace(" (OTC)", "")} ${Math.floor(i / otcAssets.length)} (OTC)`,
-      symbol: `${asset.name.split(" ")[0].replace("/", "")}OTC${i}`,
-      percentage: `${Math.floor(Math.random() * 15 + 80)}%`,
-      category: "OTC",
-      isFavorite: false,
-    })
-  }
-
-  const stockAssets = [
-    { name: "Apple Inc.", icon: "🇺🇸", symbolPrefix: "AAPL", price: (150 + Math.random() * 50).toFixed(2) },
-    { name: "Microsoft Corp.", icon: "🇺🇸", symbolPrefix: "MSFT", price: (300 + Math.random() * 50).toFixed(2) },
-    { name: "Amazon.com Inc.", icon: "🇺🇸", symbolPrefix: "AMZN", price: (100 + Math.random() * 30).toFixed(2) },
-    { name: "Tesla Inc.", icon: "🇺🇸", symbolPrefix: "TSLA", price: (150 + Math.random() * 100).toFixed(2) },
-    { name: "NVIDIA Corp.", icon: "🇺🇸", symbolPrefix: "NVDA", price: (400 + Math.random() * 100).toFixed(2) },
-    { name: "Meta Platforms Inc.", icon: "🇺🇸", symbolPrefix: "META", price: (250 + Math.random() * 50).toFixed(2) },
-    {
-      name: "Samsung Electronics",
-      icon: "🇰🇷",
-      symbolPrefix: "SMSN",
-      price: (60000 + Math.random() * 10000).toFixed(0),
-    },
-    { name: "Toyota Motor Corp.", icon: "🇯🇵", symbolPrefix: "TM", price: (2500 + Math.random() * 500).toFixed(0) },
-  ]
-  for (let i = 0; i < 30; i++) {
-    const asset = stockAssets[i % stockAssets.length]
-    markets.push({
-      name: asset.name,
-      icon: asset.icon,
-      symbol: `${asset.symbolPrefix}${i}`,
-      price: asset.price,
-      percentage: `${Math.floor(Math.random() * 10 + 75)}%`,
-      category: "Stocks",
-      isFavorite: false,
-    })
-  }
-
-  const cryptoAssets = [
-    { name: "BTC/USD", icon: "₿", symbolPrefix: "BTCUSD", price: (60000 + Math.random() * 10000).toFixed(2) },
-    { name: "ETH/USD", icon: "Ξ", symbolPrefix: "ETHUSD", price: (3000 + Math.random() * 500).toFixed(2) },
-    { name: "BNB/USD", icon: "🔶", symbolPrefix: "BNBUSD", price: (300 + Math.random() * 50).toFixed(2) },
-    { name: "SOL/USD", icon: "☀️", symbolPrefix: "SOLUSD", price: (100 + Math.random() * 50).toFixed(2) },
-    { name: "XRP/USD", icon: "Ripple", symbolPrefix: "XRPUSD", price: (0.5 + Math.random() * 0.3).toFixed(3) },
-    { name: "ADA/USD", icon: "Cardano", symbolPrefix: "ADAUSD", price: (0.4 + Math.random() * 0.2).toFixed(3) },
-    { name: "DOGE/USD", icon: "Ɖ", symbolPrefix: "DOGEUSD", price: (0.1 + Math.random() * 0.1).toFixed(4) },
-    { name: "LTC/USD", icon: "Ł", symbolPrefix: "LTCUSD", price: (70 + Math.random() * 20).toFixed(2) },
-  ]
-  for (let i = 0; i < 40; i++) {
-    const asset = cryptoAssets[i % cryptoAssets.length]
-    markets.push({
-      name: asset.name,
-      icon: asset.icon,
-      symbol: `${asset.symbolPrefix}${i}`,
-      price: asset.price,
-      percentage: `${Math.floor(Math.random() * 15 + 80)}%`,
-      category: "Crypto",
-      isFavorite: false,
-    })
-  }
-  return markets
-}
+import { TradeListItem } from "./_components/TradeListItem"
+import { SocketView } from "./_components/SocketView"
 
 const timeOptions = [
   { label: "1 Minute", value: "00:01:00" },
@@ -197,6 +83,35 @@ export default function TradingPlatform() {
     setIsMarketDropdownOpen(false)
   }
 
+  const [investmentAmount, setInvestmentAmount] = useState(0);
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const categories = ["All", "Favorite", "Forex"];
+    const [activeCategory, setActiveCategory] = useState(categories[0]);
+
+    const markets = [
+        {
+            name : "EUR/USD",
+            logo : "EUUS",
+            category : "Forex",
+            price : 1.05,
+            percentage : "85%"
+        },
+        {
+            name : "EUR/USD",
+            logo : "EUUS",
+            category : "Forex",
+            price : 1.05,
+            percentage : "85%"
+        },
+        {
+            name : "EUR/USD",
+            logo : "EUUS",
+            category : "Forex",
+            price : 1.05,
+            percentage : "85%"
+        },
+    ];
+
   // Mobile View
   if (isMobile) {
     const menuItems = [
@@ -208,6 +123,8 @@ export default function TradingPlatform() {
       { href: "/transaction-history", icon: ListChecks, label: "Transactions" },
       { href: "/trades-history", icon: ListFilter, label: "Trades" },
     ]
+
+    
 
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-[#1C1F2A] text-white overflow-hidden">
@@ -250,9 +167,9 @@ export default function TradingPlatform() {
             onClick={toggleMarketDropdown}
           >
             <div className="flex items-center gap-1">
-              <span className="text-base min-w-[24px] text-center">{selectedMarket.icon}</span>
-              <span className="text-sm font-medium truncate max-w-[150px]">{selectedMarket.name}</span>
-              <span className="text-orange-400 text-sm font-medium">{selectedMarket.percentage}</span>
+              <span className="text-base min-w-[24px] text-center">Selected market icon</span>
+              <span className="text-sm font-medium truncate max-w-[150px]">Market name</span>
+              <span className="text-orange-400 text-sm font-medium">percentage</span>
             </div>
             <ChevronDown
               size={16}
@@ -299,19 +216,17 @@ export default function TradingPlatform() {
                 </div>
               </div>
               <div className="p-2">
-                {filteredMarkets.length > 0 ? (
-                  filteredMarkets.map((market) => (
+                {markets.length > 0 ? (
+                  markets.map((market, index) => (
                     <div
-                      key={market.symbol}
-                      className={`flex items-center justify-between p-3 rounded hover:bg-gray-800 ${
-                        selectedMarket.symbol === market.symbol ? "bg-gray-800" : ""
-                      }`}
+                      key={index}
+                      className={`flex items-center justify-between p-3 rounded hover:bg-gray-800`}
                     >
                       <div
                         className="flex items-center flex-grow cursor-pointer"
-                        onClick={() => selectMarketAndUpdateChart(market)}
+                        // onClick={() => selectMarketAndUpdateChart(market)}
                       >
-                        <span className="mr-2 text-lg min-w-[24px] text-center">{market.icon}</span>
+                        <span className="mr-2 text-lg min-w-[24px] text-center">Market icon</span>
                         <div>
                           <div className="font-medium truncate max-w-[180px]">{market.name}</div>
                           <div className="text-xs text-gray-400">{market.category}</div>
@@ -319,7 +234,7 @@ export default function TradingPlatform() {
                       </div>
                       <div
                         className="text-right mr-2 cursor-pointer"
-                        onClick={() => selectMarketAndUpdateChart(market)}
+                        // onClick={() => selectMarketAndUpdateChart(market)}
                       >
                         <div>{market.price}</div>
                         <div className="text-yellow-500 text-sm">{market.percentage}</div>
@@ -327,12 +242,11 @@ export default function TradingPlatform() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          toggleFavorite(market.symbol)
                         }}
                         className="p-1 text-gray-400 hover:text-yellow-400"
-                        aria-label={market.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                        // aria-label={market.isFavorite ? "Remove from favorites" : "Add to favorites"}
                       >
-                        <Star size={18} fill={market.isFavorite ? "currentColor" : "none"} />
+                        <Star size={18} fill={"yellow"} />
                       </button>
                     </div>
                   ))
@@ -350,7 +264,7 @@ export default function TradingPlatform() {
             <div className="relative">
               <div className="text-[11px] text-gray-400 mb-1">Timer</div>
               <div className="h-9 rounded border border-gray-600 bg-[#252833] flex items-center justify-center">
-                <span className="text-sm font-medium">{selectedTimeLabel}</span>
+                <span className="text-sm font-medium">SelectedTimeLevel</span>
               </div>
               <div className="text-center mt-1 relative">
                 <button className="text-[10px] text-blue-400 font-medium" onClick={toggleTimeDropdown}>
@@ -358,19 +272,17 @@ export default function TradingPlatform() {
                 </button>
                 {isTimeDropdownOpen && (
                   <div
-                    ref={timeDropdownRef}
+                    // ref={timeDropdownRef}
                     className="absolute bottom-full left-0 right-0 bg-[#252833] border border-gray-700 rounded shadow-lg z-50 mb-1 w-full"
                   >
                     {timeOptions.map((option) => (
                       <div
                         key={option.value}
-                        className={`flex items-center justify-between p-2.5 hover:bg-gray-700 cursor-pointer text-sm ${
-                          tradeTime === option.value ? "bg-blue-600 text-white" : "text-gray-300 hover:text-gray-100"
-                        }`}
-                        onClick={() => selectTime(option)}
+                        className={`flex items-center justify-between p-2.5 hover:bg-gray-700 cursor-pointer text-sm`}
+                        // onClick={() => selectTime(option)}
                       >
                         <span>{option.label}</span>
-                        {tradeTime === option.value && <Check size={16} className="text-white" />}
+                        <Check size={16} className="text-white" />
                       </div>
                     ))}
                   </div>
@@ -384,14 +296,14 @@ export default function TradingPlatform() {
               <div className="relative">
                 <div
                   className="h-9 rounded border border-gray-600 bg-[#252833] flex items-center justify-between px-2 cursor-pointer"
-                  onClick={openInvestmentModal}
+                  // onClick={openInvestmentModal}
                 >
                   <button
                     className="p-1"
                   >
                     <Minus size={14} className="text-gray-400" />
                   </button>
-                  <span>{investment} $</span>
+                  <span>Investment 1$</span>
                   <button
                     className="p-1"
                   >
@@ -413,7 +325,7 @@ export default function TradingPlatform() {
                         autoFocus
                       />
                     </div>
-                    <Button onClick={setCustomInvestmentAmount} className="w-full bg-blue-500 hover:bg-blue-600">
+                    <Button onClick={setInvestmentAmount(1)} className="w-full bg-blue-500 hover:bg-blue-600">
                       Set Amount
                     </Button>
                   </div>
@@ -530,7 +442,7 @@ export default function TradingPlatform() {
                   </Link>
                 ))}
               </nav>
-              {socialMediaItems.length > 0 && (
+              {/* {socialMediaItems.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-gray-700/50">
                   <p className="text-xs text-center text-gray-400 mb-3">Follow us on</p>
                   <div className="flex justify-center items-center space-x-5">
@@ -557,8 +469,8 @@ export default function TradingPlatform() {
                     })}
                   </div>
                 </div>
-              )}
-              <div className="mt-4 h-1" /> {/* Small spacer at the bottom */}
+              )} */}
+              <div className="mt-4 h-1" />
             </div>
           </>
         )}
@@ -606,7 +518,8 @@ export default function TradingPlatform() {
 
   // Desktop View
   return (
-    <div className="flex h-screen w-full flex-col bg-[#1C1F2A] text-white overflow-hidden">
+    <SocketView>
+      <div className="flex h-screen w-full flex-col bg-[#1C1F2A] text-white overflow-hidden">
       <Header/>
 
       <div className="flex flex-1 overflow-hidden">
@@ -620,5 +533,6 @@ export default function TradingPlatform() {
         </main>
       </div>
     </div>
+    </SocketView>
   )
 }

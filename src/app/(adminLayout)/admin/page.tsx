@@ -11,6 +11,7 @@ import {
   // LifeBuoy,
   // Share2,
   LayoutDashboard,
+  BadgeDollarSign,
 } from "lucide-react"
 import { Button } from "@/components/reusable/Button/Button"
 import Link from "next/link"
@@ -72,8 +73,8 @@ const handleLogout = async () => {
     {
       title: "Pair Markets",
       description: "View and manage pair markets",
-      icon: Users,
-      color: "from-purple-500 to-purple-600",
+      icon: BadgeDollarSign,
+      color: "from-orange-500 to-orange-600",
       href: "/admin/pair-markets",
     },
     // {
