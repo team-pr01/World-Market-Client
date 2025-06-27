@@ -1,0 +1,56 @@
+.chart-container {
+  flex-grow: 1;
+  width: 100%;
+  height: 70vh;
+  position: relative;
+}
+
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* Hide TradingView logo */
+#tv-attr-logo {
+  display: none !important;
+}
+
+.vertical-line {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: calc(100% - 50px);
+  background: rgb(201, 201, 0);
+  z-index: 999;
+}
+
+.candle-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 1002;
+  border: 1px solid #333;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 0;
+}
+
+.tooltip-label {
+  color: #ccc;
+  margin-right: 10px;
+}
+
+.tooltip-value {
+  color: #fff;
+  font-weight: bold;
+} 

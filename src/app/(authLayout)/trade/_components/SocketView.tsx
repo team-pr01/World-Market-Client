@@ -57,92 +57,89 @@ export const SocketView: React.FC<{ children: React.ReactNode }> = ({ children }
     }));
   };
 
-  useEffect(() => {
-    const ws = new WebSocket("ws://test.kajghor.com/ws");
-    setSocket(ws);
+  // useEffect(() => {
+  //   const ws = new WebSocket("ws://test.kajghor.com/ws");
+  //   setSocket(ws);
 
-    ws.onopen = () => {
-      console.log("✅ WebSocket connection established");
-      ws.send(JSON.stringify({
-        action: "subscribe",
-        symbolId: "685d5a29ac54fe77b78af834"
-      }));
-    };
+  //   ws.onopen = () => {
+  //     console.log("✅ WebSocket connection established");
+  //     ws.send(JSON.stringify({
+  //       action: "subscribe",
+  //       symbolId: "685d5a29ac54fe77b78af834"
+  //     }));
+  //   };
 
-    ws.onmessage = (event) => {
-      const raw = event.data;
-      if (typeof raw === "string" && raw.startsWith("Echo:")) return;
+  //   ws.onmessage = (event) => {
+  //     const raw = event.data;
+  //     if (typeof raw === "string" && raw.startsWith("Echo:")) return;
 
-      try {
-        const json = JSON.parse(raw);
+  //     try {
+  //       const json = JSON.parse(raw);
 
-        if (json.type === 'trade_result') {
-          const tradeResult = { id: Date.now(), ...json, timestamp: new Date() };
-          setTradeHistory(prev => [tradeResult, ...prev]);
-          setActiveTrade(null);
-          if (!json.success) console.error('Trade failed:', json.message);
-          return;
-        }
+  //       if (json.type === 'trade_result') {
+  //         const tradeResult = { id: Date.now(), ...json, timestamp: new Date() };
+  //         setTradeHistory(prev => [tradeResult, ...prev]);
+  //         setActiveTrade(null);
+  //         if (!json.success) console.error('Trade failed:', json.message);
+  //         return;
+  //       }
         
-        const parsePrice = (priceStr: string | number) => Number(parseFloat(String(priceStr)).toFixed(5));
+  //       const parsePrice = (priceStr: string | number) => Number(parseFloat(String(priceStr)).toFixed(5));
+  //       if (json.type === 'second_price' && json.data?.price) {
+  //         setCurrentPrice(parsePrice(json.data.price));
+  //       } else if (json.type === 'new_candle' && json.close) {
+  //         setCurrentPrice(parsePrice(json.close));
+  //       }
 
-        // CRITICAL FIX: The price for 'second_price' is in `json.data.price`
-        if (json.type === 'second_price' && json.data?.price) {
-          setCurrentPrice(parsePrice(json.data.price));
-        } else if (json.type === 'new_candle' && json.close) {
-          setCurrentPrice(parsePrice(json.close));
-        }
+  //       setLiveData(prevData => {
+  //         let newData = [...prevData];
 
-        setLiveData(prevData => {
-          let newData = [...prevData];
+  //         const parseToCandle = (candleData: any): CandleData => ({
+  //           value: [
+  //             parsePrice(candleData.open),
+  //             parsePrice(candleData.close),
+  //             parsePrice(candleData.low),
+  //             parsePrice(candleData.high),
+  //           ],
+  //           timestamp: candleData.timestamp,
+  //         });
 
-          const parseToCandle = (candleData: any): CandleData => ({
-            value: [
-              parsePrice(candleData.open),
-              parsePrice(candleData.close),
-              parsePrice(candleData.low),
-              parsePrice(candleData.high),
-            ],
-            timestamp: candleData.timestamp,
-          });
-
-          if (json.type === "chart_history" && Array.isArray(json.data)) {
-            newData = json.data.map(parseToCandle).reverse();
-             if (newData.length > 0) {
-              setCurrentPrice(newData[0].value[1]);
-            }
-          } 
-          else if (json.type === "new_candle") {
-            const newCandle = parseToCandle(json);
-            newData.unshift(newCandle);
-            if (newData.length > 200) newData.pop(); // Increase buffer size
-          } 
-          else if (json.type === "second_price" && newData.length > 0) {
-            const latestCandle = { ...newData[0] };
-            const valueArray = [...latestCandle.value];
-            // CRITICAL FIX: Access price via `json.data.price`
-            const newPriceValue = parsePrice(json.data.price); 
+  //         if (json.type === "chart_history" && Array.isArray(json.data)) {
+  //           newData = json.data.map(parseToCandle).reverse();
+  //            if (newData.length > 0) {
+  //             setCurrentPrice(newData[0].value[1]);
+  //           }
+  //         } 
+  //         else if (json.type === "new_candle") {
+  //           const newCandle = parseToCandle(json);
+  //           newData.unshift(newCandle);
+  //           if (newData.length > 200) newData.pop();
+  //         } 
+  //         else if (json.type === "second_price" && newData.length > 0) {
+  //           const latestCandle = { ...newData[0] };
+  //           const valueArray = [...latestCandle.value];
+  //           const newPriceValue = parsePrice(json.data.price); 
             
-            valueArray[1] = newPriceValue; // Update close price
-            valueArray[2] = Math.min(valueArray[2], newPriceValue);
-            valueArray[3] = Math.max(valueArray[3], newPriceValue);
+  //           valueArray[1] = newPriceValue; 
+  //           valueArray[2] = Math.min(valueArray[2], newPriceValue);
+  //           valueArray[3] = Math.max(valueArray[3], newPriceValue);
             
-            latestCandle.value = valueArray;
-            newData[0] = latestCandle;
-          }
+  //           latestCandle.value = valueArray;
+  //           newData[0] = latestCandle;
+  //         }
 
-          return newData;
-        });
+  //         return newData;
+  //       });
 
-      } catch (err) {
-        console.error("WebSocket message parse error:", err);
-      }
-    };
+  //     } catch (err) {
+  //       console.error("WebSocket message parse error:", err);
+  //     }
+  //   };
 
-    ws.onerror = (error) => console.error("WebSocket error:", error);
-    ws.onclose = (e) => console.warn("WebSocket closed:", e);
-    return () => ws.close();
-  }, []);
+  //   ws.onerror = (error) => console.error("WebSocket error:", error);
+  //   ws.onclose = (e) => console.warn("WebSocket closed:", e);
+  //   return () => ws.close();
+  // }, []);
 
   return (
     <SocketContext.Provider value={{ socket, liveData, currentPrice, placeTrade, activeTrade, tradeHistory }}>

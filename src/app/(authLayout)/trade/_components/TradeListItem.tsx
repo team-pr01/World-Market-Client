@@ -10,31 +10,31 @@ interface TradeListItemProps {
 
 export function TradeListItem({ trade }: TradeListItemProps) {
    const [liveStatusColor, setLiveStatusColor] = useState("text-gray-400");
-   const isUpTrade = trade.direction === "up"
+   const isUpTrade = trade.status === "profit" || trade.status === "pending";
   const currentMarketPrice = 10;
   
     useEffect(() => {
-    if (trade.status !== "active" || currentMarketPrice === undefined) {
-      if (trade.status === "won") setLiveStatusColor("text-green-500")
-      else if (trade.status === "lost") setLiveStatusColor("text-red-500")
+    if (trade.status !== "profit" || currentMarketPrice === undefined) {
+      if (trade.status === "profit" || trade.status === "pending") setLiveStatusColor("text-green-500")
+      else if (trade.status === "loss") setLiveStatusColor("text-red-500")
       else setLiveStatusColor("text-gray-400") // For pending or other statuses
       return
     }
 
-    // Live profit/loss coloring
-    if (trade.direction === "up") {
-      setLiveStatusColor(currentMarketPrice > trade.entryPrice ? "text-green-500" : "text-red-500")
+    // Live profit/Lloss coloring
+    if (trade.status === "profit") {
+      setLiveStatusColor( "text-green-500")
     } else {
       // Down trade
-      setLiveStatusColor(currentMarketPrice < trade.entryPrice ? "text-green-500" : "text-red-500")
+      setLiveStatusColor("text-red-500")
     }
   }, [trade.status, trade.direction, trade.entryPrice, currentMarketPrice])
 
   
 
   const finalStatusColor = useMemo(() => {
-    if (trade.status === "won") return "text-green-500"
-    if (trade.status === "lost") return "text-red-500"
+    if (trade.status === "profit" || trade.status === "pending") return "text-green-500"
+    if (trade.status === "loss") return "text-red-500"
     return liveStatusColor
   }, [trade.status, liveStatusColor])
 
@@ -54,11 +54,11 @@ export function TradeListItem({ trade }: TradeListItemProps) {
           ) : (
             <ArrowDown size={14} className={cn("mr-1", finalStatusColor)} />
           )}
-          <span className={cn("font-semibold", finalStatusColor)}>${trade.investment}</span>
+          <span className={cn("font-semibold", finalStatusColor)}>{trade.value}</span>
         </div>
       </div>
       <div className="flex flex-col items-end text-right">
-        <span className={cn("text-sm font-mono", finalStatusColor)}>TIme</span>
+        <span className={cn("text-sm font-mono", finalStatusColor)}>{trade.time}</span>
         <span className={cn("text-xs mt-1", finalStatusColor)}>
           {trade.status === "active"
             ? currentMarketPrice !== undefined &&

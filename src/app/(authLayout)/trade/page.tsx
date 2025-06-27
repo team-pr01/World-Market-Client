@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
-import { useState, useEffect, useRef } from "react"
+"use client";
+import { useState, useEffect, useRef } from "react";
 import {
   BarChart3,
   LifeBuoy,
@@ -24,93 +24,368 @@ import {
   Grid,
   ArrowDownToLine,
   ArrowUpFromLine,
-} from "lucide-react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/reusable/Button/Button"
-import Header from "./_components/Header"
-import LeftSidebar from "./_components/LeftSidebar"
-import RightSidebar from "./_components/RightSidebar"
-import TradingKlineChart from "./_components/TradingKlineChart"
-import { TradeListItem } from "./_components/TradeListItem"
-import { SocketView } from "./_components/SocketView"
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/reusable/Button/Button";
+import Header from "./_components/Header";
+import LeftSidebar from "./_components/LeftSidebar";
+import RightSidebar from "./_components/RightSidebar";
+import TradingKlineChart from "./_components/TradingKlineChart";
+import { TradeListItem } from "./_components/TradeListItem";
+import { SocketView } from "./_components/SocketView";
+import TradingChart from "./_components/TradingChart";
+import Timer from "./_components/Timer";
+import { useSelector } from "react-redux";
+import { useCurrentUser } from "@/redux/Features/Auth/authSlice";
 
 const timeOptions = [
   { label: "1 Minute", value: "00:01:00" },
   { label: "2 Minutes", value: "00:02:00" },
   { label: "3 Minutes", value: "00:03:00" },
   { label: "5 Minutes", value: "00:05:00" },
-]
+];
 
-const tradesForPanel = [1,2,3,4]
+const tradesForPanel = [1, 2, 3, 4];
 
 export default function TradingPlatform() {
-  const router = useRouter()
-  const [isMobile, setIsMobile] = useState(false)
+  const user = useSelector(useCurrentUser) as any;
+  const [candlesData, setCandlesData] = useState([]);
+  const [tradeLines, setTradeLines] = useState([]);
+  const [currentPrice, setCurrentPrice] = useState(null);
+  const chartRef = useRef(null);
+  const candleSeriesRef = useRef(null);
+  const wsRef = useRef(null);
+  const [investmentAmount, setInvestmentAmount] = useState(100);
+  console.log(tradeLines);
 
-  const [isMarketDropdownOpen, setIsMarketDropdownOpen] = useState(false)
-  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const dropdownRef = useRef(null)
-  const [customInvestment, setCustomInvestment] = useState("")
-  const investmentModalRef = useRef(null)
-  const [isMobileTradesPanelOpen, setIsMobileTradesPanelOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const symbol = "btcusdt";
+  const interval = "1m";
 
 
+
+  // const ws = new WebSocket(`ws://test.kajghor.com/ws`);
+
+  useEffect(() => {
+    // fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=100`)
+    //   .then(res => {
+    //     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    //     return res.json();
+    //   })
+    //   .then(data => {
+    //     const formattedData = data.map(d => ({
+    //       time: d[0] / 1000,
+    //       open: +d[1],
+    //       high: +d[2],
+    //       low: +d[3],
+    //       close: +d[4],
+    //     }));
+    //     setCandlesData(formattedData);
+
+    //     if (candleSeriesRef.current) {
+    //       candleSeriesRef.current.setData(formattedData);
+    //       chartRef.current.timeScale().scrollToPosition(25, false);
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.error('Error loading candle data:', err);
+    //     alert('Failed to load candle data. See console for details.');
+    //   });
+
+    // WebSocket connection for real-time updates
+    const ws = new WebSocket(`ws://test.kajghor.com/ws`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      ws.send(
+        JSON.stringify({
+          action: "authenticate",
+          userId: user?._id,
+        })
+      );
+      ws.send(
+        JSON.stringify({
+          action: "subscribe",
+          symbolId: "685d5a29ac54fe77b78af834",
+        })
+      );
+       ws?.send(
+        JSON.stringify({
+          action: "get_trade_history",
+          userId: user?._id,
+          symbolId: "685d5a29ac54fe77b78af834",
+        })
+      );
+    };
+  
+
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      // console.log(data?.type);
+      // console.log(JSON.parse(e.data));
+
+        if (data?.type === "user_trade_history") {
+      setTradeLines(data?.data);
+    }
+    
+      if (data?.type === "chart_history") {
+        const formattedData = data.data.map((d) => {
+          const date = new Date(d.timestamp);
+          date.setSeconds(0, 0); // Zero out seconds and milliseconds
+          const time = Math.floor(date.getTime() / 1000); // time in seconds (minute precision)
+
+          return {
+            time,
+            open: parseFloat(d.open),
+            high: parseFloat(d.high),
+            low: parseFloat(d.low),
+            close: parseFloat(d.close),
+          };
+        });
+
+        setCandlesData(formattedData);
+
+        if (candleSeriesRef.current) {
+          candleSeriesRef.current.setData(formattedData);
+          chartRef.current.timeScale().scrollToPosition(25, false);
+        }
+      }
+
+      if (data?.type === "second_price") {
+        console.log(data);
+        const date = new Date(data?.timestamp);
+        date.setSeconds(0, 0); // Remove seconds and milliseconds
+
+        const newCandle = {
+          time: Math.floor(date.getTime() / 1000), // time in seconds, aligned to the minute
+          open: parseFloat(data?.data?.ohlc?.open),
+          high: parseFloat(data?.data?.ohlc?.high),
+          low: parseFloat(data?.data?.ohlc?.low),
+          close: parseFloat(data?.data?.ohlc?.close),
+        };
+
+        console.log(newCandle);
+
+        setCandlesData((prevData) => {
+          let updatedData = [...prevData];
+
+          if (
+            updatedData.length &&
+            updatedData[updatedData.length - 1].time === newCandle.time
+          ) {
+            updatedData[updatedData.length - 1] = newCandle;
+          } else {
+            updatedData.push(newCandle);
+            if (updatedData.length > 200) updatedData.shift();
+          }
+
+          setCurrentPrice(newCandle.close);
+
+          if (candleSeriesRef.current) {
+            candleSeriesRef.current.update(newCandle);
+            chartRef.current.timeScale().scrollToPosition(25, false);
+          }
+
+          return updatedData;
+        });
+      }
+    };
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [symbol, interval]);
+
+
+ 
+
+  const addTradeLine = (type) => {
+    if (candlesData.length === 0) {
+      alert("No candle data yet");
+      return;
+    }
+
+    wsRef.current.send(
+      JSON.stringify({
+        action: "place_trade",
+        userId: user?._id,
+        symbolId: "685d5a29ac54fe77b78af834",
+        direction: type === "buy" ? "up" : "down",
+        amount: investmentAmount,
+        account_type: "demo",
+      })
+    );
+
+    wsRef.current.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      console.log(data);
+      if(data?.type === "user_trade_history"){
+        setTradeLines(data?.data);
+      }
+      // console.log(JSON.parse(e.data));
+      if (data?.type === "trade_placed") {
+        wsRef.current.send(
+          JSON.stringify({
+            action: "get_trade_history",
+            userId: user?._id,
+            symbolId: "685d5a29ac54fe77b78af834",
+          })
+        );
+      }
+    };
+
+    const lastCandle = candlesData[candlesData.length - 1];
+    const price = lastCandle.close;
+
+    // Create price line on the candle series
+    const priceLine = candleSeriesRef.current.createPriceLine({
+      price: price,
+      color: type === "buy" ? "#28a745" : "#dc3545",
+      lineWidth: 2,
+      lineStyle: 0, // Solid
+      axisLabelVisible: true,
+      title: type === "buy" ? "🔼 Buy" : "🔽 Sell",
+    });
+
+    // Create horizontal line across the chart
+    const lineSeries = chartRef.current.addLineSeries({
+      color: type === "buy" ? "#28a74580" : "#dc354580",
+      lineWidth: 2,
+      lineStyle: 1, // Dashed
+    });
+
+    console.log(candlesData);
+
+    // Get the time range of the chart
+    const firstTime = candlesData[0]?.time;
+
+    lineSeries.setData([{ time: firstTime, value: price }]);
+
+   setTradeLines((prev) => {
+  if (!Array.isArray(prev)) return [{ priceLine, lineSeries, type, price }];
+  return [...prev, { priceLine, lineSeries, type, price }];
+});
+
+  };
+
+  const createHoverOverlay = (type) => {
+    if (candlesData.length === 0) return null;
+
+    const lastCandle = candlesData[candlesData.length - 1];
+    const currentPrice = lastCandle.close;
+
+    // Get visible price range
+    const priceRange = chartRef.current.timeScale().getVisibleRange();
+    if (!priceRange) return null;
+
+    // Get first and last time in visible range
+    const firstTime = priceRange.from;
+    const lastTime = priceRange.to;
+
+    // Create area series for the overlay
+    const areaSeries = chartRef.current.addAreaSeries({
+      lineColor: "transparent",
+      topColor:
+        type === "buy" ? "rgba(40, 167, 69, 0.2)" : "rgba(220, 53, 69, 0.2)",
+      bottomColor: "rgba(255, 255, 255, 0)",
+      lineWidth: 0,
+    });
+
+    // Create data points for the overlay with unique time values
+    const data = [
+      {
+        time: firstTime,
+        value: type === "buy" ? currentPrice + 200 : currentPrice,
+      },
+      {
+        time: firstTime + 1,
+        value: type === "buy" ? currentPrice + 200 : currentPrice,
+      },
+      {
+        time: lastTime - 1,
+        value: type === "buy" ? currentPrice + 200 : currentPrice,
+      },
+      {
+        time: lastTime,
+        value: type === "buy" ? currentPrice + 200 : currentPrice,
+      },
+    ];
+
+    areaSeries.setData(data);
+
+    return areaSeries;
+  };
+
+  const removeHoverOverlay = (areaSeries) => {
+    if (areaSeries) {
+      chartRef.current.removeSeries(areaSeries);
+    }
+  };
+
+  const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
+
+  const [isMarketDropdownOpen, setIsMarketDropdownOpen] = useState(false);
+  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const dropdownRef = useRef(null);
+  const [customInvestment, setCustomInvestment] = useState("");
+  const investmentModalRef = useRef(null);
+  const [isMobileTradesPanelOpen, setIsMobileTradesPanelOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkIfMobile()
-    window.addEventListener("resize", checkIfMobile)
-    return () => window.removeEventListener("resize", checkIfMobile)
-  }, [])
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
   const handleLogout = () => {
     // logout()
-    router.push("/login")
-  }
+    router.push("/login");
+  };
   const toggleMarketDropdown = () => {
-    setIsMarketDropdownOpen(!isMarketDropdownOpen)
-    setIsTimeDropdownOpen(false)
-    setSearchTerm("")
-    setActiveCategory("All")
-  }
+    setIsMarketDropdownOpen(!isMarketDropdownOpen);
+    setIsTimeDropdownOpen(false);
+    setSearchTerm("");
+    setActiveCategory("All");
+  };
   const toggleTimeDropdown = () => {
-    setIsTimeDropdownOpen(!isTimeDropdownOpen)
-    setIsMarketDropdownOpen(false)
-  }
-
-  const [investmentAmount, setInvestmentAmount] = useState(0);
+    setIsTimeDropdownOpen(!isTimeDropdownOpen);
+    setIsMarketDropdownOpen(false);
+  };
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
   const categories = ["All", "Favorite", "Forex"];
-    const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [activeCategory, setActiveCategory] = useState(categories[0]);
 
-    const markets = [
-        {
-            name : "EUR/USD",
-            logo : "EUUS",
-            category : "Forex",
-            price : 1.05,
-            percentage : "85%"
-        },
-        {
-            name : "EUR/USD",
-            logo : "EUUS",
-            category : "Forex",
-            price : 1.05,
-            percentage : "85%"
-        },
-        {
-            name : "EUR/USD",
-            logo : "EUUS",
-            category : "Forex",
-            price : 1.05,
-            percentage : "85%"
-        },
-    ];
+  const markets = [
+    {
+      name: "EUR/USD",
+      logo: "EUUS",
+      category: "Forex",
+      price: 1.05,
+      percentage: "85%",
+    },
+    {
+      name: "EUR/USD",
+      logo: "EUUS",
+      category: "Forex",
+      price: 1.05,
+      percentage: "85%",
+    },
+    {
+      name: "EUR/USD",
+      logo: "EUUS",
+      category: "Forex",
+      price: 1.05,
+      percentage: "85%",
+    },
+  ];
 
   // Mobile View
   if (isMobile) {
@@ -122,9 +397,7 @@ export default function TradingPlatform() {
       { href: "/support", icon: LifeBuoy, label: "Support" },
       { href: "/transaction-history", icon: ListChecks, label: "Transactions" },
       { href: "/trades-history", icon: ListFilter, label: "Trades" },
-    ]
-
-    
+    ];
 
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-[#1C1F2A] text-white overflow-hidden">
@@ -157,7 +430,7 @@ export default function TradingPlatform() {
 
         {/* Mobile Chart Area */}
         <div className="relative flex-1 min-h-0">
-          <TradingKlineChart/>
+          <TradingKlineChart />
         </div>
 
         {/* Mobile Market Selector */}
@@ -167,13 +440,21 @@ export default function TradingPlatform() {
             onClick={toggleMarketDropdown}
           >
             <div className="flex items-center gap-1">
-              <span className="text-base min-w-[24px] text-center">Selected market icon</span>
-              <span className="text-sm font-medium truncate max-w-[150px]">Market name</span>
-              <span className="text-orange-400 text-sm font-medium">percentage</span>
+              <span className="text-base min-w-[24px] text-center">
+                Selected market icon
+              </span>
+              <span className="text-sm font-medium truncate max-w-[150px]">
+                Market name
+              </span>
+              <span className="text-orange-400 text-sm font-medium">
+                percentage
+              </span>
             </div>
             <ChevronDown
               size={16}
-              className={`text-gray-400 transition-transform ${isMarketDropdownOpen ? "rotate-180" : ""}`}
+              className={`text-gray-400 transition-transform ${
+                isMarketDropdownOpen ? "rotate-180" : ""
+              }`}
             />
           </div>
 
@@ -184,7 +465,10 @@ export default function TradingPlatform() {
             >
               <div className="sticky top-0 bg-[#1A1D27] p-3 border-b border-gray-800">
                 <div className="relative mb-2">
-                  <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
                   <input
                     type="text"
                     placeholder="Search markets..."
@@ -206,7 +490,9 @@ export default function TradingPlatform() {
                     <button
                       key={category}
                       className={`px-3 py-1 text-xs rounded-full whitespace-nowrap ${
-                        activeCategory === category ? "bg-blue-500 text-white" : "bg-gray-800 text-gray-300"
+                        activeCategory === category
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-800 text-gray-300"
                       }`}
                       onClick={() => setActiveCategory(category)}
                     >
@@ -226,10 +512,16 @@ export default function TradingPlatform() {
                         className="flex items-center flex-grow cursor-pointer"
                         // onClick={() => selectMarketAndUpdateChart(market)}
                       >
-                        <span className="mr-2 text-lg min-w-[24px] text-center">Market icon</span>
+                        <span className="mr-2 text-lg min-w-[24px] text-center">
+                          Market icon
+                        </span>
                         <div>
-                          <div className="font-medium truncate max-w-[180px]">{market.name}</div>
-                          <div className="text-xs text-gray-400">{market.category}</div>
+                          <div className="font-medium truncate max-w-[180px]">
+                            {market.name}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {market.category}
+                          </div>
                         </div>
                       </div>
                       <div
@@ -237,11 +529,13 @@ export default function TradingPlatform() {
                         // onClick={() => selectMarketAndUpdateChart(market)}
                       >
                         <div>{market.price}</div>
-                        <div className="text-yellow-500 text-sm">{market.percentage}</div>
+                        <div className="text-yellow-500 text-sm">
+                          {market.percentage}
+                        </div>
                       </div>
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
+                          e.stopPropagation();
                         }}
                         className="p-1 text-gray-400 hover:text-yellow-400"
                         // aria-label={market.isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -251,7 +545,9 @@ export default function TradingPlatform() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-gray-400">No markets found</div>
+                  <div className="p-4 text-center text-gray-400">
+                    No markets found
+                  </div>
                 )}
               </div>
             </div>
@@ -267,7 +563,10 @@ export default function TradingPlatform() {
                 <span className="text-sm font-medium">SelectedTimeLevel</span>
               </div>
               <div className="text-center mt-1 relative">
-                <button className="text-[10px] text-blue-400 font-medium" onClick={toggleTimeDropdown}>
+                <button
+                  className="text-[10px] text-blue-400 font-medium"
+                  onClick={toggleTimeDropdown}
+                >
                   SWITCH TIME
                 </button>
                 {isTimeDropdownOpen && (
@@ -298,15 +597,11 @@ export default function TradingPlatform() {
                   className="h-9 rounded border border-gray-600 bg-[#252833] flex items-center justify-between px-2 cursor-pointer"
                   // onClick={openInvestmentModal}
                 >
-                  <button
-                    className="p-1"
-                  >
+                  <button className="p-1">
                     <Minus size={14} className="text-gray-400" />
                   </button>
                   <span>Investment 1$</span>
-                  <button
-                    className="p-1"
-                  >
+                  <button className="p-1">
                     <Plus size={14} className="text-gray-400" />
                   </button>
                 </div>
@@ -325,7 +620,10 @@ export default function TradingPlatform() {
                         autoFocus
                       />
                     </div>
-                    <Button onClick={setInvestmentAmount(1)} className="w-full bg-blue-500 hover:bg-blue-600">
+                    <Button
+                      onClick={setInvestmentAmount(1)}
+                      className="w-full bg-blue-500 hover:bg-blue-600"
+                    >
                       Set Amount
                     </Button>
                   </div>
@@ -340,13 +638,13 @@ export default function TradingPlatform() {
           <div className="grid grid-cols-2 gap-2">
             <Button
               className="h-11 bg-red-500 hover:bg-red-600 text-white font-medium rounded"
-            //   onClick={() => placeTrade("down")}
+              //   onClick={() => placeTrade("down")}
             >
               Down <ArrowDown size={16} className="ml-1" />
             </Button>
             <Button
               className="h-11 bg-green-500 hover:bg-green-600 text-white font-medium rounded"
-            //   onClick={() => placeTrade("up")}
+              //   onClick={() => placeTrade("up")}
             >
               Up <ArrowUp size={16} className="ml-1" />
             </Button>
@@ -374,19 +672,28 @@ export default function TradingPlatform() {
           </Link>
 
           {/* Item 3: Trades History */}
-          <Link href="/trades-history" className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400">
+          <Link
+            href="/trades-history"
+            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400"
+          >
             <ListFilter size={20} />
             {/* <span className="text-[9px] mt-0.5">Trades</span> */}
           </Link>
 
           {/* Item 4: Account */}
-          <Link href="/account" className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400">
+          <Link
+            href="/account"
+            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400"
+          >
             <User size={20} />
             {/* <span className="text-[9px] mt-0.5">Account</span> */}
           </Link>
 
           {/* Item 5: Support */}
-          <Link href="/support" className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400">
+          <Link
+            href="/support"
+            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400"
+          >
             <LifeBuoy size={20} />
             {/* <span className="text-[9px] mt-0.5">Support</span> */}
           </Link>
@@ -418,7 +725,10 @@ export default function TradingPlatform() {
               aria-labelledby="mobile-menu-title"
             >
               <div className="flex justify-between items-center mb-5">
-                <h3 id="mobile-menu-title" className="text-lg font-semibold text-slate-100">
+                <h3
+                  id="mobile-menu-title"
+                  className="text-lg font-semibold text-slate-100"
+                >
                   Menu
                 </h3>
                 <button
@@ -438,7 +748,9 @@ export default function TradingPlatform() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <item.icon size={24} className="text-purple-400" />
-                    <span className="text-xs text-center text-slate-200">{item.label}</span>
+                    <span className="text-xs text-center text-slate-200">
+                      {item.label}
+                    </span>
                   </Link>
                 ))}
               </nav>
@@ -484,7 +796,9 @@ export default function TradingPlatform() {
             />
             <div className="fixed bottom-0 left-0 right-0 max-h-[70vh] bg-[#141720] p-4 rounded-t-xl shadow-2xl z-50 flex flex-col">
               <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-700/50">
-                <h3 className="text-md font-semibold text-white">Your Trades</h3>
+                <h3 className="text-md font-semibold text-white">
+                  Your Trades
+                </h3>
                 <button
                   onClick={() => setIsMobileTradesPanelOpen(false)}
                   className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700"
@@ -494,18 +808,51 @@ export default function TradingPlatform() {
               </div>
               <div className="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {tradesForPanel.length > 0 ? (
-                  tradesForPanel.map((trade) => <TradeListItem key={trade.id} trade={trade} />)
+                  tradesForPanel.map((trade) => (
+                    <TradeListItem key={trade.id} trade={trade} />
+                  ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <div className="mb-3 rounded-full bg-gray-800 p-3">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="16" width="5" height="5" rx="1" fill="#6B7280" />
-                        <rect x="10" y="10" width="5" height="11" rx="1" fill="#6B7280" />
-                        <rect x="17" y="4" width="5" height="17" rx="1" fill="#6B7280" />
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          x="3"
+                          y="16"
+                          width="5"
+                          height="5"
+                          rx="1"
+                          fill="#6B7280"
+                        />
+                        <rect
+                          x="10"
+                          y="10"
+                          width="5"
+                          height="11"
+                          rx="1"
+                          fill="#6B7280"
+                        />
+                        <rect
+                          x="17"
+                          y="4"
+                          width="5"
+                          height="17"
+                          rx="1"
+                          fill="#6B7280"
+                        />
                       </svg>
                     </div>
-                    <p className="mb-1 text-sm text-gray-200">You don't have any trades.</p>
-                    <p className="text-xs text-gray-400">Open a trade using the form above.</p>
+                    <p className="mb-1 text-sm text-gray-200">
+                      You don't have any trades.
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Open a trade using the form above.
+                    </p>
                   </div>
                 )}
               </div>
@@ -513,26 +860,47 @@ export default function TradingPlatform() {
           </>
         )}
       </div>
-    )
+    );
   }
 
   // Desktop View
   return (
     <SocketView>
       <div className="flex h-screen w-full flex-col bg-[#1C1F2A] text-white overflow-hidden">
-      <Header/>
+        <Header />
 
-      <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar/>
+        <div className="flex flex-1 overflow-hidden">
+          <LeftSidebar />
 
-        <main className="flex flex-1 overflow-hidden">
-          <div className="relative flex-1 overflow-hidden">
-            <TradingKlineChart/>
-          </div>
-          <RightSidebar/>
-        </main>
+          <main className="flex flex-1 overflow-hidden">
+            <div className="relative flex-1 overflow-hidden">
+              {/* <TradingKlineChart/> */}
+              <TradingChart
+                chartRef={chartRef}
+                candleSeriesRef={candleSeriesRef}
+                candlesData={candlesData}
+                currentPrice={currentPrice}
+              />
+              {/* <TradeButtons
+        onBuyClick={() => addTradeLine('buy')}
+        onSellClick={() => addTradeLine('sell')}
+        createHoverOverlay={createHoverOverlay}
+        removeHoverOverlay={removeHoverOverlay}
+      /> */}
+              <Timer />
+            </div>
+            <RightSidebar
+              onBuyClick={() => addTradeLine("buy")}
+              onSellClick={() => addTradeLine("sell")}
+              createHoverOverlay={createHoverOverlay}
+              removeHoverOverlay={removeHoverOverlay}
+              setInvestmentAmount={setInvestmentAmount}
+              investmentAmount={investmentAmount}
+              tradeLines={tradeLines}
+            />
+          </main>
+        </div>
       </div>
-    </div>
     </SocketView>
-  )
+  );
 }
