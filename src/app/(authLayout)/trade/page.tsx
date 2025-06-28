@@ -112,7 +112,7 @@ export default function TradingPlatform() {
     //   });
 
     // WebSocket connection for real-time updates
-    const ws = new WebSocket(`ws://test.kajghor.com/ws`);
+    const ws = new WebSocket(`wss://test.kajghor.com/ws`);
     wsRef.current = ws;
 
     ws.onopen = () => {
