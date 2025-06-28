@@ -66,33 +66,33 @@ const RightSidebar : React.FC<TRightSidebarProps> = ({
      const [sellHoverArea, setSellHoverArea] = useState(null);
 
      const handleBuyHover = () => {
-          if (buyHoverArea) removeHoverOverlay();
-          const area = createHoverOverlay();
-          // if (buyHoverArea) removeHoverOverlay(buyHoverArea);
-          // const area = createHoverOverlay("buy");
+          // if (buyHoverArea) removeHoverOverlay();
+          // const area = createHoverOverlay();
+          if (buyHoverArea) removeHoverOverlay(buyHoverArea);
+          const area = createHoverOverlay("buy");
           setBuyHoverArea(area as any);
      };
 
      const handleBuyLeave = () => {
           if (buyHoverArea) {
-               removeHoverOverlay();
-               // removeHoverOverlay(buyHoverArea);
+               // removeHoverOverlay();
+               removeHoverOverlay(buyHoverArea);
                setBuyHoverArea(null);
           }
      };
 
      const handleSellHover = () => {
-          if (sellHoverArea) removeHoverOverlay();
-          const area = createHoverOverlay();
-          // if (sellHoverArea) removeHoverOverlay(sellHoverArea);
-          // const area = createHoverOverlay("sell");
+          // if (sellHoverArea) removeHoverOverlay();
+          // const area = createHoverOverlay();
+          if (sellHoverArea) removeHoverOverlay(sellHoverArea);
+          const area = createHoverOverlay("sell");
           setSellHoverArea(area as any);
      };
 
      const handleSellLeave = () => {
           if (sellHoverArea) {
-               removeHoverOverlay();
-               // removeHoverOverlay(sellHoverArea);
+               // removeHoverOverlay();
+               removeHoverOverlay(sellHoverArea);
                setSellHoverArea(null);
           }
      };

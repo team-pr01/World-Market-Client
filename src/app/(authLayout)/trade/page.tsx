@@ -139,8 +139,11 @@ export default function TradingPlatform() {
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      // console.log(data?.type);
+      console.log(data);
       // console.log(JSON.parse(e.data));
+      if(data?.type === "trade_timeout"){
+        toast.error("Time out", data?.message);
+      }
 
       if (data?.type === "user_trade_history") {
         console.log("Received trade history:", data?.data);
