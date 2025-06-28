@@ -139,10 +139,9 @@ export default function TradingPlatform() {
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      console.log(data);
       // console.log(JSON.parse(e.data));
       if(data?.type === "trade_timeout"){
-        toast.error("Time out", data?.message);
+        toast.error("Time out. Trade window closed for this session.");
       }
 
       if (data?.type === "user_trade_history") {

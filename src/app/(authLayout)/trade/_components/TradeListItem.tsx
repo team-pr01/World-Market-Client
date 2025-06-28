@@ -47,7 +47,7 @@ export function TradeListItem({ trade }: TradeListItemProps) {
       )}
     >
       <div className="flex flex-col items-start">
-        <span className="font-medium text-sm truncate max-w-[100px] text-white">{trade.market}</span>
+        <span className={`font-medium text-sm truncate max-w-[100px] ${trade?.direction === "up" ? "text-green-500" : "text-red-500"}`}>{trade.direction}</span>
         <div className="flex items-center mt-1">
           {isUpTrade ? (
             <ArrowUp size={14} className={cn("mr-1", finalStatusColor)} />
