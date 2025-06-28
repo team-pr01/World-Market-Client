@@ -22,13 +22,13 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/reusable/Button/Button";
-import {
-  useGetAllDepositsQuery,
-} from "@/redux/Features/User/userApi";
+import { useGetAllDepositsQuery } from "@/redux/Features/User/userApi";
+import MakeDepositForm from "./_components/MakeDepositForm";
 
 const getStatusBadgeClasses = "deposit";
 
 export default function DepositHistoryPage() {
+  const [isDepositFormOpen, setIsDepositFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const { data: deposits, isLoading } = useGetAllDepositsQuery({
@@ -75,9 +75,7 @@ export default function DepositHistoryPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Transaction Id:</span>
-            <span className="font-semibold">
-              {tx?.transaction_id || "N/A"}
-            </span>
+            <span className="font-semibold">{tx?.transaction_id || "N/A"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Payment Method:</span>
@@ -136,7 +134,7 @@ export default function DepositHistoryPage() {
               <Search className="absolute left-3 bottom-2.5 h-5 w-5 text-slate-400" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:col-span-1">
+            <div className="flex flex-col md:flex-row items-center gap-2">
               <div>
                 <label
                   htmlFor="status-filter"
@@ -159,6 +157,12 @@ export default function DepositHistoryPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <Button
+                onClick={() => setIsDepositFormOpen(true)}
+                className="bg-green-500 hover:bg-green-600 mt-5"
+              >
+                Make a Deposit
+              </Button>
             </div>
           </div>
         </Card>
@@ -179,7 +183,7 @@ export default function DepositHistoryPage() {
               {deposits?.data?.deposits?.length === 0 && (
                 <div className="mt-6 space-x-4">
                   <Button
-                    onClick={() => (window.location.href = "/deposit")}
+                     onClick={() => setIsDepositFormOpen(true)}
                     className="bg-green-500 hover:bg-green-600"
                   >
                     Make a Deposit
@@ -196,12 +200,18 @@ export default function DepositHistoryPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {deposits?.data?.deposits?.map((tx:any) => (
+            {deposits?.data?.deposits?.map((tx: any) => (
               <TransactionCard key={tx} tx={tx} />
             ))}
           </div>
         )}
       </div>
+
+      <MakeDepositForm
+        open={isDepositFormOpen}
+        onOpenChange={() => setIsDepositFormOpen(false)}
+        setIsDepositFormOpen={setIsDepositFormOpen}
+      />
     </div>
   );
 }

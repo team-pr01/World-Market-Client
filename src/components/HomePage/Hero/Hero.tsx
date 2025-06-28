@@ -1,9 +1,12 @@
 "use client"
 import { Button } from "@/components/reusable/Button/Button";
+import { useCurrentUser } from "@/redux/Features/Auth/authSlice";
 import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
+import { useSelector } from "react-redux";
 
 const Hero = () => {
+  const user = useSelector(useCurrentUser);
     return (
        <div className="text-center max-w-5xl mx-auto mb-12 lg:mb-20">
             <div className="mb-4 lg:mb-8">
@@ -37,7 +40,8 @@ const Hero = () => {
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
                 </Button>
               </Link>
-              <Link href="/signin" className="w-full sm:w-auto">
+              {
+                !user && <Link href="/signin" className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="outline"
@@ -46,6 +50,7 @@ const Hero = () => {
                   I Have an Account
                 </Button>
               </Link>
+              }
             </div>
           </div>
     );

@@ -23,8 +23,10 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/reusable/Button/Button";
 import { useGetAllWithdrawalsQuery } from "@/redux/Features/User/userApi";
+import RequestWithdrawForm from "./_components/RequestWithdrawForm";
 
 export default function WithdrawHistoryPage() {
+  const [isWithdrawFormOpen, setIsWithdrawFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -139,7 +141,7 @@ export default function WithdrawHistoryPage() {
               <Search className="absolute left-3 bottom-2.5 h-5 w-5 text-slate-400" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:col-span-1">
+            <div className="flex flex-col md:flex-row items-center gap-2">
               {/* <div>
                 <label
                   htmlFor="type-filter"
@@ -186,6 +188,12 @@ export default function WithdrawHistoryPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <Button
+                  onClick={() => setIsWithdrawFormOpen(true)}
+                  className="bg-red-500 hover:bg-red-600 mt-5"
+                >
+                  Request Withdrawal
+                </Button>
             </div>
           </div>
         </Card>
@@ -212,7 +220,7 @@ export default function WithdrawHistoryPage() {
               </p>
               <div className="mt-6 space-x-4">
                 <Button
-                  onClick={() => (window.location.href = "/withdrawal")}
+                  onClick={() => setIsWithdrawFormOpen(true)}
                   className="bg-red-500 hover:bg-red-600"
                 >
                   Request Withdrawal
@@ -228,6 +236,11 @@ export default function WithdrawHistoryPage() {
           </div>
         )}
       </div>
+      <RequestWithdrawForm
+              open={isWithdrawFormOpen}
+              onOpenChange={() => setIsWithdrawFormOpen(false)}
+              setIsWithdrawFormOpen={setIsWithdrawFormOpen}
+            />
     </div>
   );
 }

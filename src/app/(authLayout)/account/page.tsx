@@ -30,7 +30,7 @@ import {
   Edit3,
   Globe,
   ListChecks,
-  ListFilter,
+  // ListFilter,
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -314,12 +314,12 @@ const AccountPage = () => {
                 isNavigation
               />
               <Separator className="my-1 bg-slate-700/50" />
-              <ProfileItem
+              {/* <ProfileItem
                 icon={ListFilter}
                 label="Trades History"
                 onClick={() => router.push("/trades-history")}
                 isNavigation
-              />
+              /> */}
               <Separator className="my-1 bg-slate-700/50" />
               {/* <ProfileItem
                 icon={Ticket}

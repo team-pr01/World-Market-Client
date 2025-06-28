@@ -1,14 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import './TradeButtons.css';
 
-type TTradeButtons = {
-  onBuyClick: () => void;
-  onSellClick: () => void;
-  createHoverOverlay: (type: string) => any;
-  removeHoverOverlay: (area: any) => void;
-}
-const TradeButtons: React.FC<TTradeButtons> = ({ onBuyClick, onSellClick, createHoverOverlay, removeHoverOverlay }) => {
+const TradeButtons = ({ onBuyClick, onSellClick, createHoverOverlay, removeHoverOverlay }) => {
   const [buyHoverArea, setBuyHoverArea] = useState(null);
   const [sellHoverArea, setSellHoverArea] = useState(null);
 

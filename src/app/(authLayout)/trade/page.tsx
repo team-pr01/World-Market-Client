@@ -36,8 +36,10 @@ import { TradeListItem } from "./_components/TradeListItem";
 import { SocketView } from "./_components/SocketView";
 import TradingChart from "./_components/TradingChart";
 import Timer from "./_components/Timer";
-import { useSelector } from "react-redux";
-import { useCurrentUser } from "@/redux/Features/Auth/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, useCurrentUser } from "@/redux/Features/Auth/authSlice";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 const timeOptions = [
   { label: "1 Minute", value: "00:01:00" },
@@ -50,19 +52,36 @@ const tradesForPanel = [1, 2, 3, 4];
 
 export default function TradingPlatform() {
   const user = useSelector(useCurrentUser) as any;
-  const [candlesData, setCandlesData] = useState([]);
-  const [tradeLines, setTradeLines] = useState([]);
-  const [currentPrice, setCurrentPrice] = useState(null);
-  const chartRef = useRef(null);
-  const candleSeriesRef = useRef(null);
-  const wsRef = useRef(null);
-  const [investmentAmount, setInvestmentAmount] = useState(100);
-  console.log(tradeLines);
+  const dispatch = useDispatch();
+  const [candlesData, setCandlesData] = useState<any[]>([]);
+  const [tradeLines, setTradeLines] = useState<any[]>([]);
+  const [tradeHistory, setTradeHistory] = useState<any>({ trades: [] });
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  console.log(currentPrice);
+  const [lastCandleTimestamp, setLastCandleTimestamp] = useState<number | null>(
+    null
+  );
+  const [currentTimestamp, setCurrentTimestamp] = useState<number | null>(null);
+  const chartRef = useRef<any>(null);
+  const candleSeriesRef = useRef<any>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const candlesDataRef = useRef<any[]>([]);
+  const lastTradeTypeRef = useRef<string>("");
+  const tradeLinesRef = useRef<any[]>([]);
+  const [investmentAmount, setInvestmentAmount] = useState(0);
 
   const symbol = "btcusdt";
   const interval = "1m";
 
+  // Update ref whenever candlesData changes
+  useEffect(() => {
+    candlesDataRef.current = candlesData;
+  }, [candlesData]);
 
+  // Update ref whenever tradeLines changes
+  useEffect(() => {
+    tradeLinesRef.current = tradeLines;
+  }, [tradeLines]);
 
   // const ws = new WebSocket(`ws://test.kajghor.com/ws`);
 
@@ -109,7 +128,7 @@ export default function TradingPlatform() {
           symbolId: "685d5a29ac54fe77b78af834",
         })
       );
-       ws?.send(
+      ws?.send(
         JSON.stringify({
           action: "get_trade_history",
           userId: user?._id,
@@ -117,19 +136,19 @@ export default function TradingPlatform() {
         })
       );
     };
-  
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       // console.log(data?.type);
       // console.log(JSON.parse(e.data));
 
-        if (data?.type === "user_trade_history") {
-      setTradeLines(data?.data);
-    }
-    
+      if (data?.type === "user_trade_history") {
+        console.log("Received trade history:", data?.data);
+        setTradeHistory(data?.data || { trades: [] });
+      }
+
       if (data?.type === "chart_history") {
-        const formattedData = data.data.map((d) => {
+        const formattedData = data.data.map((d: any) => {
           const date = new Date(d.timestamp);
           date.setSeconds(0, 0); // Zero out seconds and milliseconds
           const time = Math.floor(date.getTime() / 1000); // time in seconds (minute precision)
@@ -145,14 +164,20 @@ export default function TradingPlatform() {
 
         setCandlesData(formattedData);
 
+        // Set last candle timestamp for timer on initial load
+        if (formattedData.length > 0) {
+          setLastCandleTimestamp(formattedData[formattedData.length - 1].time);
+          setCurrentTimestamp(Math.floor(Date.now() / 1000));
+        }
+
         if (candleSeriesRef.current) {
           candleSeriesRef.current.setData(formattedData);
-          chartRef.current.timeScale().scrollToPosition(25, false);
+          chartRef.current?.timeScale().scrollToPosition(25, false);
         }
       }
 
-      if (data?.type === "second_price") {
-        console.log(data);
+      if (data?.type === "second_price" || data?.type === "new_candle") {
+        // console.log(data);
         const date = new Date(data?.timestamp);
         date.setSeconds(0, 0); // Remove seconds and milliseconds
 
@@ -164,10 +189,17 @@ export default function TradingPlatform() {
           close: parseFloat(data?.data?.ohlc?.close),
         };
 
-        console.log(newCandle);
+        // Update timestamps for timer
+        setCurrentTimestamp(Math.floor(Date.now() / 1000));
+
+        if (data?.type === "new_candle") {
+          setLastCandleTimestamp(newCandle.time);
+        }
+
+        // console.log(newCandle);
 
         setCandlesData((prevData) => {
-          let updatedData = [...prevData];
+          const updatedData = [...prevData];
 
           if (
             updatedData.length &&
@@ -183,11 +215,82 @@ export default function TradingPlatform() {
 
           if (candleSeriesRef.current) {
             candleSeriesRef.current.update(newCandle);
-            chartRef.current.timeScale().scrollToPosition(25, false);
+            chartRef.current?.timeScale().scrollToPosition(25, false);
           }
 
           return updatedData;
         });
+      }
+
+      if (data?.type === "trade_placed") {
+        // Create price line after successful trade placement
+        if (candlesDataRef.current.length === 0) {
+          console.log("No candle data available for trade placement");
+          return;
+        }
+
+        const lastCandle =
+          candlesDataRef.current[candlesDataRef.current.length - 1];
+
+        const price = lastCandle.close;
+        const tradeType = lastTradeTypeRef.current;
+
+        // Create price line on the candle series
+        const priceLine = candleSeriesRef.current?.createPriceLine({
+          price: price,
+          color: tradeType === "buy" ? "#28a745" : "#dc3545",
+          lineWidth: 2,
+          lineStyle: 0, // Solid
+          axisLabelVisible: true,
+          title: tradeType === "buy" ? "🔼 Buy" : "🔽 Sell",
+        });
+
+        // Create horizontal line across the chart
+        const lineSeries = chartRef.current?.addLineSeries({
+          color: tradeType === "buy" ? "#28a74580" : "#dc354580",
+          lineWidth: 2,
+          lineStyle: 1, // Dashed
+        });
+
+        // Get the time range of the chart
+        const firstTime = candlesDataRef.current[0]?.time;
+
+        lineSeries?.setData([{ time: firstTime, value: price }]);
+
+        setTradeLines((prev) => {
+          if (!Array.isArray(prev))
+            return [{ priceLine, lineSeries, type: tradeType, price }];
+          return [...prev, { priceLine, lineSeries, type: tradeType, price }];
+        });
+
+        // Request updated trade history
+        wsRef.current?.send(
+          JSON.stringify({
+            action: "get_trade_history",
+            userId: user?._id,
+            symbolId: "685d5a29ac54fe77b78af834",
+          })
+        );
+      }
+
+      if (data?.type === "session_end") {
+        console.log("Session ended - removing all price lines");
+
+        // Remove all price lines from the chart
+        if (Array.isArray(tradeLinesRef.current)) {
+          tradeLinesRef.current.forEach((tradeLine) => {
+            if (tradeLine.priceLine) {
+              candleSeriesRef.current?.removePriceLine(tradeLine.priceLine);
+            }
+            if (tradeLine.lineSeries) {
+              chartRef.current?.removeSeries(tradeLine.lineSeries);
+            }
+          });
+        }
+
+        // Clear the trade lines state
+        setTradeLines([]);
+        console.log("All price lines removed");
       }
     };
 
@@ -198,16 +301,16 @@ export default function TradingPlatform() {
     };
   }, [symbol, interval]);
 
-
- 
-
-  const addTradeLine = (type) => {
+  const placeTrade = (type: string) => {
     if (candlesData.length === 0) {
       alert("No candle data yet");
       return;
     }
 
-    wsRef.current.send(
+    // Store the trade type for later use
+    lastTradeTypeRef.current = type;
+
+    wsRef.current?.send(
       JSON.stringify({
         action: "place_trade",
         userId: user?._id,
@@ -217,67 +320,20 @@ export default function TradingPlatform() {
         account_type: "demo",
       })
     );
-
-    wsRef.current.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console.log(data);
-      if(data?.type === "user_trade_history"){
-        setTradeLines(data?.data);
-      }
-      // console.log(JSON.parse(e.data));
-      if (data?.type === "trade_placed") {
-        wsRef.current.send(
-          JSON.stringify({
-            action: "get_trade_history",
-            userId: user?._id,
-            symbolId: "685d5a29ac54fe77b78af834",
-          })
-        );
-      }
-    };
-
-    const lastCandle = candlesData[candlesData.length - 1];
-    const price = lastCandle.close;
-
-    // Create price line on the candle series
-    const priceLine = candleSeriesRef.current.createPriceLine({
-      price: price,
-      color: type === "buy" ? "#28a745" : "#dc3545",
-      lineWidth: 2,
-      lineStyle: 0, // Solid
-      axisLabelVisible: true,
-      title: type === "buy" ? "🔼 Buy" : "🔽 Sell",
-    });
-
-    // Create horizontal line across the chart
-    const lineSeries = chartRef.current.addLineSeries({
-      color: type === "buy" ? "#28a74580" : "#dc354580",
-      lineWidth: 2,
-      lineStyle: 1, // Dashed
-    });
-
-    console.log(candlesData);
-
-    // Get the time range of the chart
-    const firstTime = candlesData[0]?.time;
-
-    lineSeries.setData([{ time: firstTime, value: price }]);
-
-   setTradeLines((prev) => {
-  if (!Array.isArray(prev)) return [{ priceLine, lineSeries, type, price }];
-  return [...prev, { priceLine, lineSeries, type, price }];
-});
-
   };
 
-  const createHoverOverlay = (type) => {
+  const addTradeLine = (type: string) => {
+    placeTrade(type);
+  };
+
+  const createHoverOverlay = (type: string) => {
     if (candlesData.length === 0) return null;
 
     const lastCandle = candlesData[candlesData.length - 1];
     const currentPrice = lastCandle.close;
 
     // Get visible price range
-    const priceRange = chartRef.current.timeScale().getVisibleRange();
+    const priceRange = chartRef.current?.timeScale().getVisibleRange();
     if (!priceRange) return null;
 
     // Get first and last time in visible range
@@ -285,7 +341,7 @@ export default function TradingPlatform() {
     const lastTime = priceRange.to;
 
     // Create area series for the overlay
-    const areaSeries = chartRef.current.addAreaSeries({
+    const areaSeries = chartRef.current?.addAreaSeries({
       lineColor: "transparent",
       topColor:
         type === "buy" ? "rgba(40, 167, 69, 0.2)" : "rgba(220, 53, 69, 0.2)",
@@ -297,30 +353,30 @@ export default function TradingPlatform() {
     const data = [
       {
         time: firstTime,
-        value: type === "buy" ? currentPrice + 200 : currentPrice,
+        value: type === "buy" ? currentPrice + 100 : currentPrice,
       },
       {
         time: firstTime + 1,
-        value: type === "buy" ? currentPrice + 200 : currentPrice,
+        value: type === "buy" ? currentPrice + 100 : currentPrice,
       },
       {
         time: lastTime - 1,
-        value: type === "buy" ? currentPrice + 200 : currentPrice,
+        value: type === "buy" ? currentPrice : currentPrice,
       },
       {
         time: lastTime,
-        value: type === "buy" ? currentPrice + 200 : currentPrice,
+        value: type === "buy" ? currentPrice : currentPrice,
       },
     ];
 
-    areaSeries.setData(data);
+    areaSeries?.setData(data);
 
     return areaSeries;
   };
 
-  const removeHoverOverlay = (areaSeries) => {
+  const removeHoverOverlay = (areaSeries: any) => {
     if (areaSeries) {
-      chartRef.current.removeSeries(areaSeries);
+      chartRef.current?.removeSeries(areaSeries);
     }
   };
 
@@ -345,9 +401,14 @@ export default function TradingPlatform() {
     window.addEventListener("resize", checkIfMobile);
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
-  const handleLogout = () => {
-    // logout()
-    router.push("/login");
+ const handleLogout = async () => {
+    // Remove cookies
+    Cookies.remove("accessToken");
+    // Dispatch logout and navigate
+    dispatch(logout());
+    toast.success("Logged out successfully.");
+    localStorage.clear();
+    router.push("/signin");
   };
   const toggleMarketDropdown = () => {
     setIsMarketDropdownOpen(!isMarketDropdownOpen);
@@ -360,6 +421,7 @@ export default function TradingPlatform() {
     setIsMarketDropdownOpen(false);
   };
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  console.log(setIsInvestmentModalOpen);
   const categories = ["All", "Favorite", "Forex"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
@@ -387,6 +449,12 @@ export default function TradingPlatform() {
     },
   ];
 
+    useEffect(() => {
+      if (!user) {
+        router.push("/signin");
+      }
+    }, [user, router]);
+
   // Mobile View
   if (isMobile) {
     const menuItems = [
@@ -398,6 +466,8 @@ export default function TradingPlatform() {
       { href: "/transaction-history", icon: ListChecks, label: "Transactions" },
       { href: "/trades-history", icon: ListFilter, label: "Trades" },
     ];
+
+   
 
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-[#1C1F2A] text-white overflow-hidden">
@@ -422,7 +492,7 @@ export default function TradingPlatform() {
             >
               Deposit
             </Button>
-            <button onClick={handleLogout} className="text-red-500 p-1">
+            <button onClick={handleLogout} className="text-red-500 p-1 cursor-pointer">
               <LogOut size={18} />
             </button>
           </div>
@@ -621,7 +691,7 @@ export default function TradingPlatform() {
                       />
                     </div>
                     <Button
-                      onClick={setInvestmentAmount(1)}
+                      onClick={() => setInvestmentAmount(1)}
                       className="w-full bg-blue-500 hover:bg-blue-600"
                     >
                       Set Amount
@@ -808,8 +878,8 @@ export default function TradingPlatform() {
               </div>
               <div className="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {tradesForPanel.length > 0 ? (
-                  tradesForPanel.map((trade) => (
-                    <TradeListItem key={trade.id} trade={trade} />
+                  tradesForPanel.map((trade, index) => (
+                    <TradeListItem key={index} trade={trade} />
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -878,8 +948,6 @@ export default function TradingPlatform() {
               <TradingChart
                 chartRef={chartRef}
                 candleSeriesRef={candleSeriesRef}
-                candlesData={candlesData}
-                currentPrice={currentPrice}
               />
               {/* <TradeButtons
         onBuyClick={() => addTradeLine('buy')}
@@ -887,7 +955,10 @@ export default function TradingPlatform() {
         createHoverOverlay={createHoverOverlay}
         removeHoverOverlay={removeHoverOverlay}
       /> */}
-              <Timer />
+              <Timer
+                lastCandleTimestamp={lastCandleTimestamp}
+                currentTimestamp={currentTimestamp}
+              />
             </div>
             <RightSidebar
               onBuyClick={() => addTradeLine("buy")}
@@ -896,7 +967,7 @@ export default function TradingPlatform() {
               removeHoverOverlay={removeHoverOverlay}
               setInvestmentAmount={setInvestmentAmount}
               investmentAmount={investmentAmount}
-              tradeLines={tradeLines}
+              tradeHistory={tradeHistory}
             />
           </main>
         </div>

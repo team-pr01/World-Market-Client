@@ -1,13 +1,24 @@
 "use client";
 import { Button } from "@/components/reusable/Button/Button";
+import { logout } from "@/redux/Features/Auth/authSlice";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 const Header = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Remove cookies
+    Cookies.remove("accessToken");
+    // Dispatch logout and navigate
+    dispatch(logout());
+    toast.success("Logged out successfully.");
+    localStorage.clear();
     router.push("/signin");
   };
   return (
@@ -54,7 +65,7 @@ const Header = () => {
         </Button>
         <button
           onClick={handleLogout}
-          className="text-red-500 p-1 hover:bg-gray-800 rounded-full"
+          className="text-red-500 p-1 hover:bg-gray-800 rounded-full cursor-pointer"
           title="Logout"
         >
           <LogOut size={20} />

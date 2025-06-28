@@ -48,7 +48,7 @@ const SignIn = () => {
         const user = response?.data?.user;
         const accessToken = response?.data?.token;
         dispatch(setUser({user, token: accessToken}));
-        window.location.href = "/"; 
+        window.location.href = "/trade"; 
       }
     } catch (error) {
       console.error("Error during form submission:", error);

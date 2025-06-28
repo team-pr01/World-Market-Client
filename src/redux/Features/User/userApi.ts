@@ -1,106 +1,126 @@
 import { baseApi } from "../../Api/baseApi";
 
 const userApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    getUserTransactions: builder.query({
-      query: () => ({
-        url: "/purchased/course",
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["user"],
-    }),
+     endpoints: (builder) => ({
+          getUserTransactions: builder.query({
+               query: () => ({
+                    url: "/purchased/course",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
 
-    getMe: builder.query({
-      query: () => ({
-        url: "/user/profile",
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["user"],
-    }),
+          getMe: builder.query({
+               query: () => ({
+                    url: "/user/profile",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
 
-    getAllDeposits: builder.query({
-  query: (params = {}) => {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      status,
-    } = params;
+          getAllDeposits: builder.query({
+               query: (params = {}) => {
+                    const { page = 1, limit = 10, search, status } = params;
 
-    const queryParams = new URLSearchParams();
+                    const queryParams = new URLSearchParams();
 
-    queryParams.append("page", page.toString());
-    queryParams.append("limit", limit.toString());
+                    queryParams.append("page", page.toString());
+                    queryParams.append("limit", limit.toString());
 
-    if (search) queryParams.append("search", search);
-    if (status && status !== "all") queryParams.append("status", status); 
+                    if (search) queryParams.append("search", search);
+                    if (status && status !== "all") queryParams.append("status", status);
 
-    return {
-      url: `/deposit?${queryParams.toString()}`,
-      method: "GET",
-      credentials: "include",
-    };
-  },
-  providesTags: ["user"],
-}),
+                    return {
+                         url: `/deposit?${queryParams.toString()}`,
+                         method: "GET",
+                         credentials: "include",
+                    };
+               },
+               providesTags: ["user"],
+          }),
 
+          getAllWithdrawals: builder.query({
+               query: (params = {}) => {
+                    const { page = 1, limit = 10, search, status } = params;
 
-   getAllWithdrawals: builder.query({
-  query: (params = {}) => {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      status,
-    } = params;
+                    const queryParams = new URLSearchParams();
 
-    const queryParams = new URLSearchParams();
+                    queryParams.append("page", page.toString());
+                    queryParams.append("limit", limit.toString());
 
-    queryParams.append("page", page.toString());
-    queryParams.append("limit", limit.toString());
+                    if (search) queryParams.append("search", search);
+                    if (status && status !== "all") queryParams.append("status", status);
 
-    if (search) queryParams.append("search", search);
-    if (status && status !== "all") queryParams.append("status", status);
+                    return {
+                         url: `/withdraw?${queryParams.toString()}`,
+                         method: "GET",
+                         credentials: "include",
+                    };
+               },
+               providesTags: ["user"],
+          }),
 
-    return {
-      url: `/withdraw?${queryParams.toString()}`,
-      method: "GET",
-      credentials: "include",
-    };
-  },
-  providesTags: ["user"],
-}),
+          updateProfile: builder.mutation({
+               query: (profileUpdatedData) => ({
+                    method: "PUT",
+                    url: `/user/profile`,
+                    body: profileUpdatedData,
+                    credentials: "include",
+               }),
+               invalidatesTags: ["user"],
+          }),
 
+          updateProfileImage: builder.mutation({
+               query: (data) => ({
+                    method: "PUT",
+                    url: `/user/profile/image`,
+                    body: data,
+                    credentials: "include",
+               }),
+               invalidatesTags: ["user"],
+          }),
 
-    updateProfile: builder.mutation({
-      query: (profileUpdatedData) => ({
-        method: "PUT",
-        url: `/user/profile`,
-        body: profileUpdatedData,
-        credentials: "include",
-      }),
-      invalidatesTags: ["user"],
-    }),
+           getAllPaymentMethods: builder.query({
+               query: () => ({
+                    url: "/payment-method",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
 
-    updateProfileImage: builder.mutation({
-      query: (data) => ({
-        method: "PUT",
-        url: `/user/profile/image`,
-        body: data,
-        credentials: "include",
-      }),
-      invalidatesTags: ["user"],
-    }),
-  }),
+          makeDeposit: builder.mutation({
+               query: (data) => ({
+                    method: "POST",
+                    url: `/deposit`,
+                    body: data,
+                    credentials: "include",
+               }),
+               invalidatesTags: ["user"],
+          }),
+
+          requestWithdraw: builder.mutation({
+               query: (data) => ({
+                    method: "POST",
+                    url: `/withdraw`,
+                    body: data,
+                    credentials: "include",
+               }),
+               invalidatesTags: ["user"],
+          }),
+     }),
 });
 
 export const {
-  useGetUserTransactionsQuery,
-  useGetMeQuery,
-  useGetAllDepositsQuery,
-  useGetAllWithdrawalsQuery,
-  useUpdateProfileMutation,
-  useUpdateProfileImageMutation,
+     useGetUserTransactionsQuery,
+     useGetMeQuery,
+     useGetAllDepositsQuery,
+     useGetAllWithdrawalsQuery,
+     useUpdateProfileMutation,
+     useUpdateProfileImageMutation,
+     useGetAllPaymentMethodsQuery,
+     useMakeDepositMutation,
+     useRequestWithdrawMutation,
 } = userApi;

@@ -23,7 +23,6 @@ import AddPairWalletForm from "./_components/AddPairWalletForm";
 
 export default function PairMarkets() {
   const { data, isLoading } = useGetAllSymbolsQuery({});
-  console.log(data);
   const [deletePairMarket] = useDeletePairMarketMutation();
   const router = useRouter();
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);

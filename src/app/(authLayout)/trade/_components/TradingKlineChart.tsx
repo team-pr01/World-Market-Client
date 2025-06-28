@@ -127,9 +127,6 @@ const TradingKlineChart: React.FC = () => {
             animation: false,
           },
         },
-        // ==========================================================
-        // THE FIX: The "Ghost Series" for automatic scaling
-        // ==========================================================
         {
           type: 'line',
           data: [ // Data has two points to span the chart
@@ -155,9 +152,9 @@ const TradingKlineChart: React.FC = () => {
       // On updates, we must send the whole series array and x-axis data
       // so ECharts can process the new ghost series and candle data correctly.
       chart.setOption({
-        xAxis: {
-          data: option.xAxis.data
-        },
+        // xAxis: {
+        //   data: option.xAxis.data
+        // },
         series: option.series,
       });
     }
