@@ -5,11 +5,10 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
+  DollarSign,
   Minus,
   Plus,
-  Search,
   Star,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 import { TradeListItem } from "./TradeListItem";
@@ -23,6 +22,9 @@ type TRightSidebarProps = {
   investmentAmount: number;
   setInvestmentAmount: (amount: number) => void;
   tradeHistory: any;
+  symbols : any;
+  selectedSymbol : any;
+  setSelectedSymbol : any;
 };
 const RightSidebar: React.FC<TRightSidebarProps> = ({
   onBuyClick,
@@ -32,44 +34,23 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
   investmentAmount,
   setInvestmentAmount,
   tradeHistory,
+  symbols,
+  selectedSymbol,
+  setSelectedSymbol
 }) => {
   // console.log(tradeLines, "tradelines");
   const { activeTrade } = useSocket();
-  const categories = ["All", "Favorite", "Forex"];
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [searchTerm, setSearchTerm] = useState("");
+//   const categories = ["All", "Favorite", "Forex"];
+//   const [activeCategory, setActiveCategory] = useState(categories[0]);
+//   const [searchTerm, setSearchTerm] = useState("");
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
   const [isMarketDropdownOpen, setIsMarketDropdownOpen] = useState(false);
 
   const toggleMarketDropdown = () => {
     setIsMarketDropdownOpen(!isMarketDropdownOpen);
-    setSearchTerm("");
-    setActiveCategory("All");
+//     setSearchTerm("");
+//     setActiveCategory("All");
   };
-
-  const markets = [
-    {
-      name: "EUR/USD",
-      logo: "EUUS",
-      category: "Forex",
-      price: 1.05,
-      percentage: "85%",
-    },
-    {
-      name: "EUR/USD",
-      logo: "EUUS",
-      category: "Forex",
-      price: 1.05,
-      percentage: "85%",
-    },
-    {
-      name: "EUR/USD",
-      logo: "EUUS",
-      category: "Forex",
-      price: 1.05,
-      percentage: "85%",
-    },
-  ];
 
   const [buyHoverArea, setBuyHoverArea] = useState(null);
   const [sellHoverArea, setSellHoverArea] = useState(null);
@@ -106,8 +87,6 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
     }
   };
 
-  console.log(tradeHistory);
-
   return (
     <aside className="w-[240px] border-l border-gray-800 bg-[#1A1D27] overflow-y-auto">
       <div className="p-3">
@@ -117,8 +96,8 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
             onClick={toggleMarketDropdown}
           >
             <span className="mr-1 min-w-[24px] text-center">📊</span>
-            <span className="font-medium truncate max-w-[100px]">EUR/USD</span>
-            <span className="ml-1 text-yellow-500">85%</span>
+            <span className="font-medium truncate max-w-[100px]">{selectedSymbol?.pair}</span>
+            <span className="ml-1 text-yellow-500 uppercase">({selectedSymbol?.market_type})</span>
             <ChevronDown
               size={16}
               className={`ml-auto text-gray-400 transition-transform ${
@@ -128,7 +107,9 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
           </div>
           {isMarketDropdownOpen && (
             <div className="absolute right-[240px] top-16 mt-1 bg-[#1A1D27] border border-gray-800 rounded shadow-lg w-[400px] z-50">
-              <div className="p-3 border-b border-gray-800">
+               <span className="font-medium truncate p-2">All Pairs</span>
+               {/* Search bar and categories */}
+              {/* <div className="p-3 border-b border-gray-800">
                 <div className="relative mb-2">
                   <Search
                     size={16}
@@ -165,24 +146,36 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
               <div className="max-h-[400px] overflow-y-auto">
-                {markets.length > 0 ? (
-                  markets.map((market) => (
+                {symbols?.data?.length > 0 ? (
+                  symbols?.data?.map((market) => (
                     <div
                       key={market.name}
                       className="flex items-center justify-between p-3 hover:bg-gray-800"
+                      onClick={() => setSelectedSymbol(market)}
                     >
                       <div className="flex items-center flex-grow cursor-pointer">
                         <span className="mr-2 text-lg min-w-[24px] text-center">
-                          {market.logo}
+                          {market.logo
+                          ?
+                          market.logo
+                          :
+                          <DollarSign/>
+                          
+                          }
                         </span>
                         <div className="flex-grow">
-                          <div className="font-medium truncate max-w-[200px]">
-                            {market.name}
+                          <div className="flex items-center gap-2">
+                              <h1 className="font-medium truncate">
+                            {market.pair}
+                          </h1>
+                          <h1 className="font-medium truncate uppercase">
+                            ({market.market_type})
+                          </h1>
                           </div>
                           <div className="text-xs text-gray-400">
-                            {market.category}
+                            {market.type}
                           </div>
                         </div>
                       </div>

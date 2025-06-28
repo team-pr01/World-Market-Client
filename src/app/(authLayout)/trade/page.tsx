@@ -40,6 +40,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, useCurrentUser } from "@/redux/Features/Auth/authSlice";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
+import { useGetAllSymbolsQuery } from "@/redux/Features/User/userApi";
 
 const timeOptions = [
   { label: "1 Minute", value: "00:01:00" },
@@ -51,6 +52,18 @@ const timeOptions = [
 const tradesForPanel = [1, 2, 3, 4];
 
 export default function TradingPlatform() {
+  const [loading, setLoading] = useState(true);
+  const { data: symbols } = useGetAllSymbolsQuery({});
+  const [selectedSymbol, setSelectedSymbol] = useState<any>(null);
+  console.log(selectedSymbol);
+
+  useEffect(() => {
+    if (symbols?.data?.length) {
+      setSelectedSymbol(symbols.data[0]);
+      setLoading(false);
+    }
+  }, [symbols]);
+
   const user = useSelector(useCurrentUser) as any;
   const dispatch = useDispatch();
   const [candlesData, setCandlesData] = useState<any[]>([]);
@@ -86,6 +99,9 @@ export default function TradingPlatform() {
   // const ws = new WebSocket(`ws://test.kajghor.com/ws`);
 
   useEffect(() => {
+    if (!user?._id || !selectedSymbol?._id) return;
+
+    setLoading(true);
     // fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=100`)
     //   .then(res => {
     //     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -125,22 +141,29 @@ export default function TradingPlatform() {
       ws.send(
         JSON.stringify({
           action: "subscribe",
-          symbolId: "685d5a29ac54fe77b78af834",
+          symbolId: selectedSymbol?._id,
         })
       );
       ws?.send(
         JSON.stringify({
           action: "get_trade_history",
           userId: user?._id,
-          symbolId: "685d5a29ac54fe77b78af834",
+          symbolId: selectedSymbol?._id,
         })
       );
+
+      setLoading(false);
+    };
+
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      setLoading(false); // also stop loading on error
     };
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       // console.log(JSON.parse(e.data));
-      if(data?.type === "trade_timeout"){
+      if (data?.type === "trade_timeout") {
         toast.error("Time out. Trade window closed for this session.");
       }
 
@@ -270,7 +293,7 @@ export default function TradingPlatform() {
           JSON.stringify({
             action: "get_trade_history",
             userId: user?._id,
-            symbolId: "685d5a29ac54fe77b78af834",
+            symbolId: selectedSymbol?._id,
           })
         );
       }
@@ -301,7 +324,7 @@ export default function TradingPlatform() {
         wsRef.current.close();
       }
     };
-  }, [symbol, interval]);
+  }, [symbol, interval, user?._id, selectedSymbol?._id]);
 
   const placeTrade = (type: string) => {
     if (candlesData.length === 0) {
@@ -312,15 +335,15 @@ export default function TradingPlatform() {
     // Store the trade type for later use
     lastTradeTypeRef.current = type;
 
-     const tradeData = JSON.stringify({
-        action: "place_trade",
-        userId: user?._id,
-        symbolId: "685d5a29ac54fe77b78af834",
-        direction: type === "buy" ? "up" : "down",
-        amount: investmentAmount,
-        account_type: "demo",
-      })
-      wsRef.current?.send(tradeData);
+    const tradeData = JSON.stringify({
+      action: "place_trade",
+      userId: user?._id,
+      symbolId: selectedSymbol?._id,
+      direction: type === "buy" ? "up" : "down",
+      amount: investmentAmount,
+      account_type: "demo",
+    });
+    wsRef.current?.send(tradeData);
   };
 
   const addTradeLine = (type: string) => {
@@ -402,7 +425,7 @@ export default function TradingPlatform() {
     window.addEventListener("resize", checkIfMobile);
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
- const handleLogout = async () => {
+  const handleLogout = async () => {
     // Remove cookies
     Cookies.remove("accessToken");
     // Dispatch logout and navigate
@@ -450,11 +473,11 @@ export default function TradingPlatform() {
     },
   ];
 
-    useEffect(() => {
-      if (!user) {
-        router.push("/signin");
-      }
-    }, [user, router]);
+  useEffect(() => {
+    if (!user) {
+      router.push("/signin");
+    }
+  }, [user, router]);
 
   // Mobile View
   if (isMobile) {
@@ -467,8 +490,6 @@ export default function TradingPlatform() {
       { href: "/transaction-history", icon: ListChecks, label: "Transactions" },
       { href: "/trades-history", icon: ListFilter, label: "Trades" },
     ];
-
-   
 
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-[#1C1F2A] text-white overflow-hidden">
@@ -493,7 +514,10 @@ export default function TradingPlatform() {
             >
               Deposit
             </Button>
-            <button onClick={handleLogout} className="text-red-500 p-1 cursor-pointer">
+            <button
+              onClick={handleLogout}
+              className="text-red-500 p-1 cursor-pointer"
+            >
               <LogOut size={18} />
             </button>
           </div>
@@ -946,10 +970,15 @@ export default function TradingPlatform() {
           <main className="flex flex-1 overflow-hidden">
             <div className="relative flex-1 overflow-hidden">
               {/* <TradingKlineChart/> */}
-              <TradingChart
+             {
+              loading ?
+              <p className="text-white... text-center">Loading...</p>
+              :
+               <TradingChart
                 chartRef={chartRef}
                 candleSeriesRef={candleSeriesRef}
               />
+             }
               {/* <TradeButtons
         onBuyClick={() => addTradeLine('buy')}
         onSellClick={() => addTradeLine('sell')}
@@ -969,10 +998,14 @@ export default function TradingPlatform() {
               setInvestmentAmount={setInvestmentAmount}
               investmentAmount={investmentAmount}
               tradeHistory={tradeHistory}
+              symbols={symbols}
+              selectedSymbol={selectedSymbol}
+              setSelectedSymbol={setSelectedSymbol}
             />
           </main>
         </div>
       </div>
     </SocketView>
+    
   );
 }

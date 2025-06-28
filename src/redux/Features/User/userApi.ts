@@ -110,6 +110,15 @@ const userApi = baseApi.injectEndpoints({
                }),
                invalidatesTags: ["user"],
           }),
+
+          getAllSymbols: builder.query({
+               query: () => ({
+                    url: "/symbols/active",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
      }),
 });
 
@@ -123,4 +132,5 @@ export const {
      useGetAllPaymentMethodsQuery,
      useMakeDepositMutation,
      useRequestWithdrawMutation,
+     useGetAllSymbolsQuery,
 } = userApi;

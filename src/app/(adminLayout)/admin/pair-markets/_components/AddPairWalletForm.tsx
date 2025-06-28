@@ -26,7 +26,35 @@ const AddPairWalletForm = ({
   const [addPairMarket, { isLoading }] = useAddPairMarketMutation();
   const { register, handleSubmit, reset } = useForm<any>();
 
-  const onSubmit = async (data: any) => {
+//   const onSubmit = async (data: any) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append("logo", data.logo[0]);
+
+//     Object.entries(data).forEach(([key, value]) => {
+//       if (key !== "logo") {
+//         formData.append(key, value);
+//       }
+//     });
+
+//     const response = await addPairMarket(formData).unwrap();
+//     console.log(response);
+
+//     if (response) {
+//       reset();
+//       setIsAddWalletOpen(false);
+//     }
+//   } catch (error) {
+//     toast.error(
+//       (typeof error === "object" &&
+//         error !== null &&
+//         "data" in error &&
+//         (error as any).data?.message) || "Failed to add payment method"
+//     );
+//   }
+// };
+
+const onSubmit = async (data: any) => {
     try{
       const response = await addPairMarket(data).unwrap();
       console.log(response);
@@ -43,6 +71,7 @@ const AddPairWalletForm = ({
       );
     }
   };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -100,6 +129,7 @@ const AddPairWalletForm = ({
                 <Input
                   id="min_market_price"
                   type="number"
+                  step={0.01}
                   {...register("min_market_price", { required: true })}
                   className="bg-gray-700 border-gray-600 text-white mt-1"
                 />
@@ -109,6 +139,7 @@ const AddPairWalletForm = ({
                 <Input
                   id="max_market_price"
                   type="number"
+                  step={0.01}
                   {...register("max_market_price", { required: true })}
                   className="bg-gray-700 border-gray-600 text-white mt-1"
                 />
@@ -118,6 +149,7 @@ const AddPairWalletForm = ({
                 <Input
                   id="start_market_price"
                   type="number"
+                  step={0.01}
                   {...register("start_market_price", { required: true })}
                   className="bg-gray-700 border-gray-600 text-white mt-1"
                 />
@@ -136,6 +168,16 @@ const AddPairWalletForm = ({
               </div>
 
             </div>
+{/* 
+            <div>
+                <Label htmlFor="logo">Logo</Label>
+                <Input
+                  id="logo"
+                  type="file"
+                  {...register("logo", { required: true })}
+                  className="bg-gray-700 border-gray-600 text-white mt-1"
+                />
+              </div> */}
 
           <DialogFooter className="flex justify-end">
             <Button
