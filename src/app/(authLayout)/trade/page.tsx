@@ -68,7 +68,7 @@ export default function TradingPlatform() {
   const candlesDataRef = useRef<any[]>([]);
   const lastTradeTypeRef = useRef<string>("");
   const tradeLinesRef = useRef<any[]>([]);
-  const [investmentAmount, setInvestmentAmount] = useState(0);
+  const [investmentAmount, setInvestmentAmount] = useState(1);
 
   const symbol = "btcusdt";
   const interval = "1m";
@@ -310,8 +310,7 @@ export default function TradingPlatform() {
     // Store the trade type for later use
     lastTradeTypeRef.current = type;
 
-    wsRef.current?.send(
-      JSON.stringify({
+     const tradeData = JSON.stringify({
         action: "place_trade",
         userId: user?._id,
         symbolId: "685d5a29ac54fe77b78af834",
@@ -319,7 +318,7 @@ export default function TradingPlatform() {
         amount: investmentAmount,
         account_type: "demo",
       })
-    );
+      wsRef.current?.send(tradeData);
   };
 
   const addTradeLine = (type: string) => {
