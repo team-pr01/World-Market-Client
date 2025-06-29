@@ -20,7 +20,10 @@ import {
 } from "@/redux/Features/User/userApi";
 
 export default function MySupportTickets() {
-  const { data: titkctes, isLoading } = useGetSupportTicketsQuery({});
+  const { data: tickets, isLoading } = useGetSupportTicketsQuery({});
+  console.log(tickets);
+
+  
   const data = [
     {
       _id: "1",
@@ -40,6 +43,9 @@ export default function MySupportTickets() {
       },
     },
   ]
+
+
+
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [replyToTicket] = useReplyToTicketMutation();

@@ -168,6 +168,25 @@ const adminApi = baseApi.injectEndpoints({
                }),
                invalidatesTags: ["user"],
           }),
+
+          
+          getAllSupportTicketsAdmin: builder.query({
+               query: () => ({
+                    url: "/admin/symbols",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
+
+          adminReplyOnSupportTicket: builder.mutation({
+               query: (id) => ({
+                    url: `/admin/symbols/${id}`,
+                    method: "DELETE",
+                    credentials: "include",
+               }),
+               invalidatesTags: ["user"],
+          }),
      }),
 });
 
@@ -189,4 +208,6 @@ export const {
      useGetAllSymbolsQuery,
      useAddPairMarketMutation,
      useDeletePairMarketMutation,
+     useGetAllSupportTicketsAdminQuery,
+     useAdminReplyOnSupportTicketMutation,
 } = adminApi;

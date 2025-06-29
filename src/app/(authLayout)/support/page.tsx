@@ -62,12 +62,14 @@ export default function SupportPage() {
             <ChevronLeft size={18} className="mr-1 group-hover:-translate-x-1 transition-transform" />
             Back to Trading
           </Link>
+          <Link href={"/support/my-support-tickets"}>
           <Button
             variant="outline"
             className="bg-transparent border-blue-500 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 flex items-center"
           >
             <Ticket size={16} className="mr-2" /> My Tickets
           </Button>
+          </Link>
         </div>
 
         {/* Form Container */}

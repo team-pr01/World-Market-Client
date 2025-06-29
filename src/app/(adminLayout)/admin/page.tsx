@@ -12,6 +12,7 @@ import {
   // Share2,
   LayoutDashboard,
   BadgeDollarSign,
+  HelpingHand,
 } from "lucide-react"
 import { Button } from "@/components/reusable/Button/Button"
 import Link from "next/link"
@@ -76,6 +77,13 @@ const handleLogout = async () => {
       icon: BadgeDollarSign,
       color: "from-orange-500 to-orange-600",
       href: "/admin/pair-markets",
+    },
+    {
+      title: "Support Tickets",
+      description: "View and manage user support tickets",
+      icon: HelpingHand,
+      color: "from-teal-500 to-teal-600",
+      href: "/admin/support-tickets",
     },
     // {
     //   title: "Support Tickets",
