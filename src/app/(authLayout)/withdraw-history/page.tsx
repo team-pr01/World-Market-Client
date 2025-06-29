@@ -66,7 +66,6 @@ export default function WithdrawHistoryPage() {
               {isDeposit ? "Deposit" : "Withdrawal"}
             </CardTitle>
             <Badge>{tx?.status}</Badge>
-            {/* <Badge className={cn("text-xs", getStatusBadgeClasses(status, tx.type))}>{status}</Badge> */}
           </div>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
@@ -142,30 +141,6 @@ export default function WithdrawHistoryPage() {
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-2">
-              {/* <div>
-                <label
-                  htmlFor="type-filter"
-                  className="block text-xs font-medium text-slate-400 mb-1"
-                >
-                  Type
-                </label>
-                <Select
-                  value={typeFilter}
-                  onValueChange={(value) => setTypeFilter(value as any)}
-                >
-                  <SelectTrigger
-                    id="type-filter"
-                    className="bg-slate-700 border-slate-600 text-slate-200 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600 text-slate-200">
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="deposit">Deposits</SelectItem>
-                    <SelectItem value="withdrawal">Withdrawals</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
               <div>
                 <label
                   htmlFor="status-filter"
