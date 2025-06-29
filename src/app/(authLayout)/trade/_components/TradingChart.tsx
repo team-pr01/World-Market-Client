@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createChart } from "lightweight-charts";
 import "./TradingChart.css";
 
-const TradingChart = ({ chartRef, candleSeriesRef } : { chartRef: any, candleSeriesRef: any}) => {
+const TradingChart = ({ chartRef, candleSeriesRef }: { chartRef: any; candleSeriesRef: any }) => {
      const chartContainerRef = useRef(null);
      const [tooltip, setTooltip] = useState({
           visible: false,
@@ -45,7 +45,7 @@ const TradingChart = ({ chartRef, candleSeriesRef } : { chartRef: any, candleSer
                     timeVisible: true,
                     secondsVisible: false,
                     barSpacing: 25,
-                    tickMarkFormatter: (time:any) => {
+                    tickMarkFormatter: (time: any) => {
                          const d = new Date(time * 1000);
                          return (
                               d.getHours().toString().padStart(2, "0") +
@@ -59,7 +59,12 @@ const TradingChart = ({ chartRef, candleSeriesRef } : { chartRef: any, candleSer
           chartRef.current = chart;
 
           // Add candlestick series
-          const candleSeries = chart.addCandlestickSeries();
+          const candleSeries = chart.addCandlestickSeries({
+               upColor: "#00A63E",
+               downColor: "#FB2C36",
+               wickUpColor: "#00A63E",
+               wickDownColor: "#FB2C36",
+          });
           candleSeriesRef.current = candleSeries;
 
           // Tooltip functionality
@@ -100,10 +105,37 @@ const TradingChart = ({ chartRef, candleSeriesRef } : { chartRef: any, candleSer
           };
      }, []);
 
+
+      const [time, setTime] = useState<string>("");
+       const [timezone, setTimezone] = useState<string>("");
+     
+       useEffect(() => {
+         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+         setTimezone(tz);
+     
+         const updateClock = () => {
+           const now = new Date();
+           const formatter = new Intl.DateTimeFormat("en-US", {
+             timeZone: tz,
+             hour: "numeric",
+             minute: "numeric",
+             second: "numeric",
+             hour12: true,
+           });
+           setTime(formatter.format(now));
+         };
+     
+         updateClock(); // set immediately
+         const interval = setInterval(updateClock, 1000);
+     
+         return () => clearInterval(interval);
+       }, []);
+
      return (
           <div className="chart-container">
                <div ref={chartContainerRef} className="chart" />
-               <div className="vertical-line" />
+               <h1 className="absolute left-0 top-3 z-10">🕒 Time in {timezone}: <span className="text-green-500">{time}</span></h1>
+               {/* <div className="vertical-line" /> */}
                {tooltip.visible && tooltip.data && (
                     <div
                          className="candle-tooltip"

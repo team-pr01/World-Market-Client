@@ -120,9 +120,19 @@ const userApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
+    postSupportTicket: builder.mutation({
+      query: (data) => ({
+        method: "POST",
+        url: `/support/create`,
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
     getSupportTickets: builder.query({
       query: () => ({
-        url: "/symbols/active",
+        url: "/support/my-tickets",
         method: "GET",
         credentials: "include",
       }),
@@ -130,10 +140,19 @@ const userApi = baseApi.injectEndpoints({
     }),
 
     replyToTicket: builder.mutation({
-      query: (data) => ({
+      query: ({ id, message }) => ({
         method: "POST",
-        url: `/withdraw`,
-        body: data,
+        url: `/support/my-tickets/${id}/reply`,
+        body: { message },
+        credentials: "include",
+      }),
+      invalidatesTags: ["user"],
+    }),
+
+    closeSupportTicket: builder.mutation({
+      query: (id) => ({
+        url: `/support/my-tickets/${id}/close`,
+        method: "POST",
         credentials: "include",
       }),
       invalidatesTags: ["user"],
@@ -152,6 +171,8 @@ export const {
   useMakeDepositMutation,
   useRequestWithdrawMutation,
   useGetAllSymbolsQuery,
+  usePostSupportTicketMutation,
   useGetSupportTicketsQuery,
   useReplyToTicketMutation,
+  useCloseSupportTicketMutation,
 } = userApi;

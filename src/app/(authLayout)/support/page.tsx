@@ -5,29 +5,38 @@ import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, LifeBuoy, Mail, MessageSquare, Send, Ticket, User } from 'lucide-react';
+import { ChevronLeft, LifeBuoy, Send, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/reusable/Button/Button';
-// import { useSubmitSupportTicketMutation } from '@/redux/api/supportApi';
+import { usePostSupportTicketMutation } from '@/redux/Features/User/userApi';
+import { useRouter } from 'next/navigation';
 
-const subjectOptions = [
-  { value: 'deposit_issue', label: 'Deposit Issue' },
-  { value: 'withdrawal_issue', label: 'Withdrawal Issue' },
-  { value: 'account_problem', label: 'Account Problem/Access' },
-  { value: 'technical_glitch', label: 'Technical Glitch/Bug Report' },
-  { value: 'trading_question', label: 'Trading Question' },
-  { value: 'verification_help', label: 'Verification Help' },
-  { value: 'general_inquiry', label: 'General Inquiry' },
-  { value: 'feedback_suggestion', label: 'Feedback/Suggestion' },
+const categories = [
+  { value: 'general', label: 'General Inquiry' },
+  { value: 'technical', label: 'Technical Issue' },
+  { value: 'billing', label: 'Billing Question' },
+  { value: 'account', label: 'Account Problem' },
+  { value: 'trading', label: 'Trading Related' },
+  { value: 'withdrawal', label: 'Withdrawal Issue' },
+  { value: 'deposit', label: 'Deposit Issue' },
   { value: 'other', label: 'Other' },
 ];
 
+const priorityOptions = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'urgent', label: 'Urgent' },
+];
+
+
+
 type FormValues = {
-  name: string;
-  email: string;
+  priority: string;
+  category: string;
   subject: string;
-  message: string;
+  description: string;
 };
 
 export default function SupportPage() {
@@ -40,14 +49,15 @@ export default function SupportPage() {
     reset,
   } = useForm<FormValues>();
 
-  const isLoading = false
-  // const [submitSupportTicket, { isLoading }] = useSubmitSupportTicketMutation();
+  const [postSupportTicket, { isLoading }] = usePostSupportTicketMutation();
+  const router = useRouter();
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      // await submitSupportTicket(values).unwrap();
+      await postSupportTicket(data).unwrap();
       toast.success('Ticket submitted successfully!');
       reset();
+      router.push("/support/my-support-tickets")
     } catch (error: any) {
       toast.error(error?.data?.message || 'Submission failed');
     }
@@ -84,74 +94,74 @@ export default function SupportPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Name & Email */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-1">
                 <label htmlFor="name" className="text-gray-300 flex items-center">
-                  <User size={16} className="mr-2 text-blue-400" /> Your Name
+                   Subject
                 </label>
                 <Input
-                  id="name"
-                  {...register('name', { required: 'Name is required' })}
+                  id="subject"
+                  {...register('subject', { required: 'subject is required' })}
                   className="bg-[#252833] border-gray-700 focus:border-blue-500 text-white placeholder-gray-500"
-                  placeholder="Enter your full name"
+                  placeholder="Enter subject"
                 />
-                {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+                {errors.subject && <p className="text-sm text-red-500">{errors.subject.message}</p>}
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="email" className="text-gray-300 flex items-center">
-                  <Mail size={16} className="mr-2 text-blue-400" /> Email Address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Invalid email address',
-                    },
-                  })}
-                  className="bg-[#252833] border-gray-700 focus:border-blue-500 text-white placeholder-gray-500"
-                  placeholder="Enter your email"
-                />
-                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-              </div>
-            </div>
-
-            {/* Subject Select */}
+            {/* Category Select */}
             <div className="space-y-1">
               <label className="text-gray-300 flex items-center">
-                <MessageSquare size={16} className="mr-2 text-blue-400" /> Subject
+                 Category
               </label>
               <Select
-                onValueChange={(val) => setValue('subject', val)}
-                value={getValues('subject')}
+                onValueChange={(val) => setValue('category', val)}
+                value={getValues('category')}
               >
                 <SelectTrigger className="bg-[#252833] border-gray-700 text-white">
                   <SelectValue placeholder="Select the nature of your issue" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#252833] border-gray-700 text-white">
-                  {subjectOptions.map((option) => (
+                  {categories.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.subject && <p className="text-sm text-red-500">{errors.subject.message}</p>}
+              {errors.category && <p className="text-sm text-red-500">{errors.category.message}</p>}
             </div>
 
-            {/* Message */}
+            {/* Priority Select */}
             <div className="space-y-1">
-              <label htmlFor="message" className="text-gray-300">
+              <label className="text-gray-300 flex items-center">
+                 Priority
+              </label>
+              <Select
+                onValueChange={(val) => setValue('priority', val)}
+                value={getValues('priority')}
+              >
+                <SelectTrigger className="bg-[#252833] border-gray-700 text-white">
+                  <SelectValue placeholder="Select the nature of your issue" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#252833] border-gray-700 text-white">
+                  {priorityOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.priority && <p className="text-sm text-red-500">{errors.priority.message}</p>}
+            </div>
+
+             {/* Message */}
+            <div className="space-y-1">
+              <label htmlFor="description" className="text-gray-300">
                 Detailed Description
               </label>
               <Textarea
-                id="message"
-                {...register('message', {
-                  required: 'Message is required',
-                  minLength: { value: 10, message: 'Minimum 10 characters required' },
+                id="description"
+                {...register('description', {
+                  required: 'Description is required',
                 })}
                 placeholder="Describe your issue or question in detail..."
                 className="resize-y min-h-[120px] bg-[#252833] border-gray-700 focus:border-blue-500 text-white placeholder-gray-500"
@@ -159,7 +169,7 @@ export default function SupportPage() {
               <p className="text-xs text-gray-500">
                 Please provide as much detail as possible, including steps to reproduce the issue.
               </p>
-              {errors.message && <p className="text-sm text-red-500">{errors.message.message}</p>}
+              {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
             </div>
 
             {/* Submit */}
@@ -200,15 +210,6 @@ export default function SupportPage() {
             </Button>
           </form>
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-500 mt-8">
-          For urgent matters, you can also check our{' '}
-          <Link href="/faq" className="underline hover:text-blue-400">
-            FAQ section
-          </Link>{' '}
-          or contact us via live chat (if available).
-        </p>
       </div>
     </div>
   );

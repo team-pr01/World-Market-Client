@@ -26,47 +26,48 @@ const AddPairWalletForm = ({
   const [addPairMarket, { isLoading }] = useAddPairMarketMutation();
   const { register, handleSubmit, reset } = useForm<any>();
 
-//   const onSubmit = async (data: any) => {
-//   try {
-//     const formData = new FormData();
-//     formData.append("logo", data.logo[0]);
+  //   const onSubmit = async (data: any) => {
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("logo", data.logo[0]);
 
-//     Object.entries(data).forEach(([key, value]) => {
-//       if (key !== "logo") {
-//         formData.append(key, value);
-//       }
-//     });
+  //     Object.entries(data).forEach(([key, value]) => {
+  //       if (key !== "logo") {
+  //         formData.append(key, value);
+  //       }
+  //     });
 
-//     const response = await addPairMarket(formData).unwrap();
-//     console.log(response);
+  //     const response = await addPairMarket(formData).unwrap();
+  //     console.log(response);
 
-//     if (response) {
-//       reset();
-//       setIsAddWalletOpen(false);
-//     }
-//   } catch (error) {
-//     toast.error(
-//       (typeof error === "object" &&
-//         error !== null &&
-//         "data" in error &&
-//         (error as any).data?.message) || "Failed to add payment method"
-//     );
-//   }
-// };
+  //     if (response) {
+  //       reset();
+  //       setIsAddWalletOpen(false);
+  //     }
+  //   } catch (error) {
+  //     toast.error(
+  //       (typeof error === "object" &&
+  //         error !== null &&
+  //         "data" in error &&
+  //         (error as any).data?.message) || "Failed to add payment method"
+  //     );
+  //   }
+  // };
 
-const onSubmit = async (data: any) => {
-    try{
+  const onSubmit = async (data: any) => {
+    try {
       const response = await addPairMarket(data).unwrap();
       console.log(response);
-    if (response) {
-      reset();
-      setIsAddWalletOpen(false);
-    }
-    
-    }
-    catch (error) {
+      if (response) {
+        reset();
+        setIsAddWalletOpen(false);
+      }
+    } catch (error) {
       toast.error(
-        (typeof error === "object" && error !== null && "data" in error && (error as any).data?.message) ||
+        (typeof error === "object" &&
+          error !== null &&
+          "data" in error &&
+          (error as any).data?.message) ||
           "Failed to add payment method"
       );
     }
@@ -76,99 +77,106 @@ const onSubmit = async (data: any) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Add New Pair
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">Add New Pair</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-               <div>
-                <Label>type</Label>
-                <select
-                  {...register("type")}
-                  className="w-full bg-gray-700 border-gray-600 text-white mt-1"
-                >
-                  <option value="crypto">Crypto</option>
-                  <option value="forex">Forex</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="baseAsset">Base Asset</Label>
-                <Input
-                  id="baseAsset"
-                  {...register("baseAsset", { required: true })}
-                  className="bg-gray-700 border-gray-600 text-white mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="quoteAsset">Quote Asset</Label>
-                <Input
-                  id="quoteAsset"
-                  {...register("quoteAsset", { required: true })}
-                  className="bg-gray-700 border-gray-600 text-white mt-1"
-                />
-              </div>
-
-               <div>
-                <Label>Market Type</Label>
-                <select
-                  {...register("market_type")}
-                  className="w-full bg-gray-700 border-gray-600 text-white mt-1"
-                >
-                  <option value="otc">OTC</option>
-                  <option value="real">Real</option>
-                </select>
-              </div>
-
-
-              <div>
-                <Label htmlFor="min_market_price">Min Market Price</Label>
-                <Input
-                  id="min_market_price"
-                  type="number"
-                  step={0.01}
-                  {...register("min_market_price", { required: true })}
-                  className="bg-gray-700 border-gray-600 text-white mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="max_market_price">Max Market Price</Label>
-                <Input
-                  id="max_market_price"
-                  type="number"
-                  step={0.01}
-                  {...register("max_market_price", { required: true })}
-                  className="bg-gray-700 border-gray-600 text-white mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="start_market_price">Start Market Price</Label>
-                <Input
-                  id="start_market_price"
-                  type="number"
-                  step={0.01}
-                  {...register("start_market_price", { required: true })}
-                  className="bg-gray-700 border-gray-600 text-white mt-1"
-                />
-              </div>
-
-              <div>
-                <Label>Status</Label>
-                <select
-                  {...register("status")}
-                  className="w-full bg-gray-700 border-gray-600 text-white mt-1"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>type</Label>
+              <select
+                {...register("type")}
+                className="w-full bg-gray-700 border-gray-600 text-white mt-1"
+              >
+                <option value="crypto">Crypto</option>
+                <option value="forex">Forex</option>
+              </select>
             </div>
-{/* 
+
+            <div>
+              <Label htmlFor="baseAsset">Base Asset</Label>
+              <Input
+                id="baseAsset"
+                {...register("baseAsset", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="quoteAsset">Quote Asset</Label>
+              <Input
+                id="quoteAsset"
+                {...register("quoteAsset", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>Market Type</Label>
+              <select
+                {...register("market_type")}
+                className="w-full bg-gray-700 border-gray-600 text-white mt-1"
+              >
+                <option value="otc">OTC</option>
+                <option value="real">Real</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="min_market_price">Min Market Price</Label>
+              <Input
+                id="min_market_price"
+                type="number"
+                step={0.01}
+                {...register("min_market_price", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="max_market_price">Max Market Price</Label>
+              <Input
+                id="max_market_price"
+                type="number"
+                step="0.0000000001"
+                {...register("max_market_price", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="start_market_price">Start Market Price</Label>
+              <Input
+                id="start_market_price"
+                type="number"
+                step="0.0000000001"
+                {...register("start_market_price", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>Status</Label>
+              <select
+                {...register("status")}
+                className="w-full bg-gray-700 border-gray-600 text-white mt-1"
+              >
+                <option value="pending">Pending</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="start_market_price">Payout Commission</Label>
+              <Input
+                id="commission_percentage"
+                type="number"
+                step="0.0000000001"
+                defaultValue={100}
+                {...register("commission_percentage", { required: true })}
+                className="bg-gray-700 border-gray-600 text-white mt-1"
+              />
+            </div>
+          </div>
+          {/* 
             <div>
                 <Label htmlFor="logo">Logo</Label>
                 <Input

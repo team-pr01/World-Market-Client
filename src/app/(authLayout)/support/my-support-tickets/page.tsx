@@ -15,49 +15,38 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { Button } from "@/components/reusable/Button/Button";
 import {
+  useCloseSupportTicketMutation,
   useGetSupportTicketsQuery,
   useReplyToTicketMutation,
 } from "@/redux/Features/User/userApi";
 
 export default function MySupportTickets() {
   const { data: tickets, isLoading } = useGetSupportTicketsQuery({});
-  console.log(tickets);
-
-  
-  const data = [
-    {
-      _id: "1",
-      subject: "Deposit Issue",
-      status: "Open",
-      createdAt: new Date(),
-    },
-  ];
-  const messages = [
-    {
-      _id: "1",
-      message: "Hello, I'm having an issue with my deposit.",
-      createdAt: new Date(),
-      user: {
-        _id: "1",
-        name: "John Doe",
-      },
-    },
-  ]
-
-
+  console.log(tickets?.data?.tickets);
 
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [replyToTicket] = useReplyToTicketMutation();
+  const [closeSupportTicket] = useCloseSupportTicketMutation();
 
-  const handleReply = async (ticketId: string) => {
+  const handleReply = async (id: string) => {
     if (!reply.trim()) return toast.error("Reply cannot be empty.");
     try {
-      await replyToTicket({ ticketId, message: reply }).unwrap();
+      await replyToTicket({ id, message: reply }).unwrap();
       toast.success("Reply sent.");
       setReply("");
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to send reply");
+    }
+  };
+
+  const handleClose = async (id: string) => {
+    try {
+      await closeSupportTicket(id).unwrap();
+      toast.success("Ticket closed successfully");
+      setReply("");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed");
     }
   };
 
@@ -68,17 +57,19 @@ export default function MySupportTickets() {
 
         {isLoading ? (
           <p>Loading...</p>
-        ) : data?.length === 0 ? (
+        ) : tickets?.data?.tickets?.length === 0 ? (
           <p className="text-gray-400">No support tickets found.</p>
         ) : (
           <div className="space-y-4">
-            {data?.map((ticket: any) => (
+            {tickets?.data?.tickets?.map((ticket: any) => (
               <div
                 key={ticket._id}
                 className="bg-[#141720] p-4 rounded-lg border border-gray-700 shadow-sm flex justify-between items-center"
               >
                 <div>
-                  <h2 className="text-lg font-semibold">{ticket.subject}</h2>
+                  <h2 className="text-lg font-semibold capitalize">
+                    {ticket.subject}
+                  </h2>
                   <p className="text-gray-400 text-sm">
                     {ticket.status} •{" "}
                     {new Date(ticket.createdAt).toLocaleDateString()}
@@ -91,13 +82,13 @@ export default function MySupportTickets() {
                   }
                 >
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="text-blue-400 border-blue-500 hover:bg-blue-500/10"
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      View
-                    </Button>
+                      <Button
+                        variant="outline"
+                        className="text-blue-400 border-blue-500 hover:bg-blue-500/10"
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        View
+                      </Button>
                   </DialogTrigger>
                   <DialogContent className="bg-[#1C1F2A] border border-slate-700 text-white max-w-2xl">
                     <DialogHeader>
@@ -134,7 +125,7 @@ export default function MySupportTickets() {
 
                     {/* Message History */}
                     <div className="max-h-[300px] overflow-y-auto space-y-4 p-2 pr-1 mb-4">
-                      {messages?.map((msg: any, index: number) => (
+                      {ticket?.replies?.map((msg: any, index: number) => (
                         <div
                           key={index}
                           className={`p-3 rounded-md text-sm ${
@@ -166,13 +157,25 @@ export default function MySupportTickets() {
                         value={reply}
                         onChange={(e) => setReply(e.target.value)}
                       />
-                      <Button
+                     <div className="flex items-center gap-3 mt-3">
+                       <Button
                         onClick={() => handleReply(ticket._id)}
-                        className="mt-2 bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="w-4 h-4 mr-2" />
                         Send Reply
                       </Button>
+                       <Button
+                        onClick={() => {
+                          handleClose(ticket._id);
+                          setOpenTicketId(null);
+                        }}
+                        variant="outline"
+                        className="text-blue-400 border-blue-500 hover:bg-blue-500/10"
+                      >
+                        Close Ticket
+                      </Button>
+                     </div>
                     </div>
                   </DialogContent>
                 </Dialog>

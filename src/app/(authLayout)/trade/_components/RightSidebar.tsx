@@ -29,7 +29,7 @@ type TRightSidebarProps = {
 const RightSidebar: React.FC<TRightSidebarProps> = ({
   onBuyClick,
   onSellClick,
-  createHoverOverlay,
+  // createHoverOverlay,
   removeHoverOverlay,
   investmentAmount,
   setInvestmentAmount,
@@ -59,8 +59,8 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
     // if (buyHoverArea) removeHoverOverlay();
     // const area = createHoverOverlay();
     if (buyHoverArea) removeHoverOverlay(buyHoverArea);
-    const area = createHoverOverlay("buy");
-    setBuyHoverArea(area as any);
+    // const area = createHoverOverlay("buy");
+    // setBuyHoverArea(area as any);
   };
 
   const handleBuyLeave = () => {
@@ -75,8 +75,8 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
     // if (sellHoverArea) removeHoverOverlay();
     // const area = createHoverOverlay();
     if (sellHoverArea) removeHoverOverlay(sellHoverArea);
-    const area = createHoverOverlay("sell");
-    setSellHoverArea(area as any);
+    // const area = createHoverOverlay("sell");
+    // setSellHoverArea(area as any);
   };
 
   const handleSellLeave = () => {
@@ -87,9 +87,13 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
     }
   };
 
+
+ 
+
   return (
     <aside className="w-[240px] border-l border-gray-800 bg-[#1A1D27] overflow-y-auto">
       <div className="p-3">
+        
         <div className="mb-4">
           <div
             className="flex items-center p-2 rounded hover:bg-gray-800/50 cursor-pointer transition-colors"
