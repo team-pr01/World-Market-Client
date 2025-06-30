@@ -118,7 +118,10 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
                     <div
                       key={market.name}
                       className="flex items-center justify-between p-3 hover:bg-gray-800"
-                      onClick={() => setSelectedSymbol(market)}
+                      onClick={() => {
+                        setSelectedSymbol(market);
+                        setIsMarketDropdownOpen(false);
+                      }}
                     >
                       <div className="flex items-center flex-grow cursor-pointer">
                         <span className="mr-2 text-lg min-w-[24px] text-center">

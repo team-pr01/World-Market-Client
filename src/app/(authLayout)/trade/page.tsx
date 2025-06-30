@@ -6,10 +6,8 @@ import {
   BarChart3,
   LifeBuoy,
   User,
-  MoreHorizontal,
   Plus,
   Minus,
-  Bell,
   ChevronDown,
   ArrowUp,
   ArrowDown,
@@ -17,7 +15,6 @@ import {
   X,
   Star,
   List,
-  ListChecks,
   ListFilter,
   Grid,
   ArrowDownToLine,
@@ -41,8 +38,6 @@ import Cookies from "js-cookie";
 import { useGetAllSymbolsQuery } from "@/redux/Features/User/userApi";
 import { RootState } from "@/redux/store";
 import BalanceSwitcher from "./_components/BalanceSwitcher";
-
-const tradesForPanel = [1, 2, 3, 4];
 
 export default function TradingPlatform() {
   const [loading, setLoading] = useState(true);
@@ -446,13 +441,9 @@ export default function TradingPlatform() {
 
   const toggleMarketDropdown = () => {
     setIsMarketDropdownOpen(!isMarketDropdownOpen);
-    setActiveCategory("All");
   };
 
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
-//   console.log(setIsInvestmentModalOpen);
-  const categories = ["All", "Favorite", "Forex"];
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   useEffect(() => {
     if (!user) {
@@ -500,9 +491,9 @@ export default function TradingPlatform() {
   // Mobile View
   if (isMobile) {
     const menuItems = [
-      { href: "/", icon: BarChart3, label: "Trading" },
-      { href: "/deposit", icon: ArrowDownToLine, label: "Deposit" },
-      { href: "/withdrawal", icon: ArrowUpFromLine, label: "Withdrawal" },
+      { href: "/trade", icon: BarChart3, label: "Trading" },
+      { href: "/deposit-history", icon: ArrowDownToLine, label: "Deposit" },
+      { href: "/withdraw-history", icon: ArrowUpFromLine, label: "Withdrawal" },
       { href: "/account", icon: User, label: "Account" },
       { href: "/support", icon: LifeBuoy, label: "Support" },
       { href: "/trades-history", icon: ListFilter, label: "Trades" },
@@ -513,21 +504,12 @@ export default function TradingPlatform() {
         {/* Mobile navbar */}
         <header className="flex h-12 items-center justify-between px-3 border-b border-gray-800 shrink-0">
           <div className="flex items-center gap-3">
-            <button className="p-1">
-              <MoreHorizontal size={20} />
-            </button>
             <BalanceSwitcher
               demoBalance={user?.demo_balance}
               mainBalance={user?.main_balance}
             />
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[10px]">
-                1
-              </span>
-            </div>
             <Button
               className="bg-green-500 hover:bg-green-600 text-xs px-4 py-1.5 h-7"
               onClick={() => router.push("/deposit")}
@@ -556,7 +538,7 @@ export default function TradingPlatform() {
         </div>
 
         {/* Mobile Market Selector */}
-        <div className="mt-4 z-50">
+        <div className="mt-5 z-50 relative">
           <div
             className="flex items-center p-2 rounded hover:bg-gray-800/50 cursor-pointer transition-colors relative"
             onClick={toggleMarketDropdown}
@@ -576,35 +558,34 @@ export default function TradingPlatform() {
             />
           </div>
           {isMarketDropdownOpen && (
-            <div className="absolute bottom-5 mt-1 bg-[#1A1D27] border border-gray-800 rounded shadow-lg w-[400px] z-50">
+            <div className="absolute top-10 bg-[#1A1D27] border border-gray-800 rounded shadow-lg w-full z-50 h-32 overflow-auto">
               <span className="font-medium truncate p-2">All Pairs</span>
-              <div className="max-h-[400px] overflow-y-auto">
+              <div className="max-h-[300px] overflow-y-auto">
                 {symbols?.data?.length > 0 ? (
                   symbols?.data?.map((market) => (
                     <div
                       key={market.name}
                       className="flex items-center justify-between p-3 hover:bg-gray-800"
-                      onClick={() => setSelectedSymbol(market)}
+                      onClick={() => {
+                        setSelectedSymbol(market);
+                        setIsMarketDropdownOpen(false);
+                      }}
                     >
-                      <div className="flex items-center flex-grow cursor-pointer">
+                      <div className="flex items-center cursor-pointer">
                         <span className="mr-2 text-lg min-w-[24px] text-center">
                           {market.logo ? market.logo : <DollarSign />}
                         </span>
-                        <div className="flex-grow">
-                          <div className="flex items-center gap-2">
-                            <h1 className="font-medium truncate">
-                              {market.pair}
-                            </h1>
-                            <h1 className="font-medium truncate uppercase">
-                              ({market.market_type})
-                            </h1>
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {market.type}
+                        <div>
+                          {/* <h1 className="font-medium">{market.pair}</h1> */}
+                          <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <span className="uppercase">
+                             {market.pair} ({market.market_type})
+                            </span>
+                            <span className="text-xs">{market.type}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right mr-3 cursor-pointer">
+                      <div className="text-right hidden xl:block mr-3 cursor-pointer">
                         <div>{market.price}</div>
                         <div className="text-yellow-500 text-sm">
                           {market.percentage}
@@ -677,7 +658,7 @@ export default function TradingPlatform() {
             </div>
           </div>
 
-          <div className="mb-3 flex flex-col gap-3 z-50">
+          <div className="mt-2 flex flex-col gap-3 z-50">
             <Button
               className={`w-full h-12 ${
                 activeTrade === "up"
@@ -685,8 +666,8 @@ export default function TradingPlatform() {
                   : "bg-green-500 hover:bg-green-600"
               } text-white z-10`}
               onClick={() => {
-               addTradeLine("buy")
-               console.log("object");
+                addTradeLine("buy");
+                console.log("object");
               }}
               onMouseEnter={handleBuyHover}
               onMouseLeave={handleBuyLeave}
@@ -711,7 +692,7 @@ export default function TradingPlatform() {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="flex items-center justify-around h-12 border-t border-gray-800 bg-[#1A1D27] shrink-0">
+        <nav className="flex items-center justify-around h-12 border-t border-gray-800 bg-[#1A1D27] shrink-0 z-10">
           {/* Item 1: Menu Button (Replaces old Trade link) */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
@@ -720,15 +701,6 @@ export default function TradingPlatform() {
             <Grid size={20} />
             {/* Optional: add text label if desired, e.g., <span className="text-[9px] mt-0.5">Menu</span> */}
           </button>
-
-          {/* Item 2: Transaction History */}
-          <Link
-            href="/transaction-history"
-            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400"
-          >
-            <ListChecks size={20} />
-            {/* <span className="text-[9px] mt-0.5">History</span> */}
-          </Link>
 
           {/* Item 3: Trades History */}
           <Link
@@ -760,7 +732,7 @@ export default function TradingPlatform() {
           {/* Item 6: Mobile Trades Panel Button */}
           <button
             onClick={() => setIsMobileTradesPanelOpen(true)}
-            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400"
+            className="p-2 flex flex-col items-center text-gray-400 hover:text-purple-400 z-10"
           >
             <List size={20} />
             {/* <span className="text-[9px] mt-0.5">Active</span> */}
@@ -865,56 +837,66 @@ export default function TradingPlatform() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                {tradesForPanel.length > 0 ? (
-                  tradesForPanel.map((trade, index) => (
-                    <TradeListItem key={index} trade={trade} />
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="mb-3 rounded-full bg-gray-800 p-3">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <rect
-                          x="3"
-                          y="16"
-                          width="5"
-                          height="5"
-                          rx="1"
-                          fill="#6B7280"
-                        />
-                        <rect
-                          x="10"
-                          y="10"
-                          width="5"
-                          height="11"
-                          rx="1"
-                          fill="#6B7280"
-                        />
-                        <rect
-                          x="17"
-                          y="4"
-                          width="5"
-                          height="17"
-                          rx="1"
-                          fill="#6B7280"
-                        />
-                      </svg>
-                    </div>
-                    <p className="mb-1 text-sm text-gray-200">
-                      You don't have any trades.
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Open a trade using the form above.
-                    </p>
-                  </div>
-                )}
+              <div className="p-3 max-h-[250px] overflow-y-auto space-y-2">
+            {tradeHistory?.trades?.length > 0 ? (
+              tradeHistory?.trades?.map((trade: any, index: any) => (
+                <TradeListItem
+                  key={index}
+                  trade={{
+                    id: trade._id,
+                    name: "EUR/USD",
+                    time: new Date(trade.bidTime).toLocaleTimeString(),
+                    value: `$${trade.amount}`,
+                    status: trade.status,
+                    direction : trade.direction
+                  }}
+                />
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-3 rounded-full bg-gray-800 p-3">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      x="3"
+                      y="16"
+                      width="5"
+                      height="5"
+                      rx="1"
+                      fill="#6B7280"
+                    />
+                    <rect
+                      x="10"
+                      y="10"
+                      width="5"
+                      height="11"
+                      rx="1"
+                      fill="#6B7280"
+                    />
+                    <rect
+                      x="17"
+                      y="4"
+                      width="5"
+                      height="17"
+                      rx="1"
+                      fill="#6B7280"
+                    />
+                  </svg>
+                </div>
+                <p className="mb-1 text-sm text-gray-200">
+                  You don't have any trades.
+                </p>
+                <p className="text-xs text-gray-400">
+                  Open a trade using the form above.
+                </p>
               </div>
+            )}
+          </div>
             </div>
           </>
         )}
