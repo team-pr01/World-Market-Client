@@ -132,36 +132,40 @@ const TradingChart = ({ chartRef, candleSeriesRef }: { chartRef: any; candleSeri
        }, []);
 
      return (
-          <div className="chart-container">
-               <div ref={chartContainerRef} className="chart" />
-               <h1 className="absolute left-0 top-3 z-10">🕒 Time in {timezone}: <span className="text-green-500">{time}</span></h1>
-               {/* <div className="vertical-line" /> */}
-               {tooltip.visible && tooltip.data && (
-                    <div
-                         className="candle-tooltip"
-                         style={{
-                              left: tooltip.position.x,
-                              top: tooltip.position.y,
-                         }}>
-                         <div className="tooltip-row">
-                              <span className="tooltip-label">Open:</span>
-                              <span className="tooltip-value">{tooltip.data.open.toFixed(2)}</span>
-                         </div>
-                         <div className="tooltip-row">
-                              <span className="tooltip-label">High:</span>
-                              <span className="tooltip-value">{tooltip.data.high.toFixed(2)}</span>
-                         </div>
-                         <div className="tooltip-row">
-                              <span className="tooltip-label">Low:</span>
-                              <span className="tooltip-value">{tooltip.data.low.toFixed(2)}</span>
-                         </div>
-                         <div className="tooltip-row">
-                              <span className="tooltip-label">Close:</span>
-                              <span className="tooltip-value">{tooltip.data.close.toFixed(2)}</span>
-                         </div>
-                    </div>
-               )}
-          </div>
+         <div className="chart-container">
+  <div ref={chartContainerRef} className="chart" />
+  <h1 className="absolute left-0 top-3 z-10">
+    🕒 Time in {timezone}: <span className="text-green-500">{time}</span>
+  </h1>
+
+  {tooltip.visible && tooltip.data && (
+    <div
+      className="candle-tooltip"
+      style={{
+        left: tooltip.position.x,
+        top: tooltip.position.y,
+      }}
+    >
+      <div className="tooltip-row">
+        <span className="tooltip-label">Open:</span>
+        <span className="tooltip-value">{tooltip.data.open.toFixed(2)}</span>
+      </div>
+      <div className="tooltip-row">
+        <span className="tooltip-label">High:</span>
+        <span className="tooltip-value">{tooltip.data.high.toFixed(2)}</span>
+      </div>
+      <div className="tooltip-row">
+        <span className="tooltip-label">Low:</span>
+        <span className="tooltip-value">{tooltip.data.low.toFixed(2)}</span>
+      </div>
+      <div className="tooltip-row">
+        <span className="tooltip-label">Close:</span>
+        <span className="tooltip-value">{tooltip.data.close.toFixed(2)}</span>
+      </div>
+    </div>
+  )}
+</div>
+
      );
 };
 

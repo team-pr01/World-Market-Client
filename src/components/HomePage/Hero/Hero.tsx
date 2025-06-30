@@ -31,7 +31,7 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 justify-center mb-12 sm:mb-16 lg:mb-24 px-4">
-              <Link href="/signup" className="w-full sm:w-auto">
+              <Link href="/trade" className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-base sm:text-lg lg:text-xl px-6 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"

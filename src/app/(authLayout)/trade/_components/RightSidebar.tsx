@@ -112,45 +112,6 @@ const RightSidebar: React.FC<TRightSidebarProps> = ({
           {isMarketDropdownOpen && (
             <div className="absolute right-[240px] top-16 mt-1 bg-[#1A1D27] border border-gray-800 rounded shadow-lg w-[400px] z-50">
                <span className="font-medium truncate p-2">All Pairs</span>
-               {/* Search bar and categories */}
-              {/* <div className="p-3 border-b border-gray-800">
-                <div className="relative mb-2">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search markets..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#252833] border border-gray-700 rounded py-2 pl-10 pr-3 text-sm focus:outline-none focus:border-blue-500"
-                  />
-                  {searchTerm && (
-                    <button
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      className={`px-3 py-1 text-xs rounded-full ${
-                        activeCategory === category
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-800 text-gray-300"
-                      }`}
-                      onClick={() => setActiveCategory(category)}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div> */}
               <div className="max-h-[400px] overflow-y-auto">
                 {symbols?.data?.length > 0 ? (
                   symbols?.data?.map((market) => (
