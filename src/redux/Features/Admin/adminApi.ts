@@ -1,4 +1,6 @@
+import { WithdrawResponse } from "@/type/withdraw";
 import { baseApi } from "../../Api/baseApi";
+import { DepositResponse } from "@/type/deposit";
 
 const adminApi = baseApi.injectEndpoints({
      endpoints: (builder) => ({
@@ -12,7 +14,16 @@ const adminApi = baseApi.injectEndpoints({
                invalidatesTags: ["user"],
           }),
 
-          getAllDeposits: builder.query({
+          getAdminProfile: builder.query({
+               query: () => ({
+                    url: "/admin/profile",
+                    method: "GET",
+                    credentials: "include",
+               }),
+               providesTags: ["user"],
+          }),
+
+          getAllDeposits: builder.query<DepositResponse, {page?: number, limit?: number, search?: string, status?: string}>({
                query: (params = {}) => {
                     const { page = 1, limit = 10, search, status } = params;
 
@@ -77,7 +88,7 @@ const adminApi = baseApi.injectEndpoints({
                invalidatesTags: ["user"],
           }),
 
-          getAllWithdrawals: builder.query({
+          getAllWithdrawals: builder.query<WithdrawResponse, void>({
                query: () => ({
                     url: "/admin/withdraw",
                     method: "GET",
@@ -168,7 +179,7 @@ const adminApi = baseApi.injectEndpoints({
                }),
                invalidatesTags: ["user"],
           }),
-          
+
           getAllSupportTicketsAdmin: builder.query({
                query: () => ({
                     url: "/admin/support/admin/tickets",
@@ -179,10 +190,10 @@ const adminApi = baseApi.injectEndpoints({
           }),
 
           adminReplyOnSupportTicket: builder.mutation({
-               query: ({id, message}) => ({
+               query: ({ id, message }) => ({
                     url: `/admin/support/admin/tickets/${id}/reply`,
                     method: "POST",
-                    body : {message},
+                    body: { message },
                     credentials: "include",
                }),
                invalidatesTags: ["user"],
@@ -200,6 +211,7 @@ const adminApi = baseApi.injectEndpoints({
 });
 
 export const {
+     useGetAdminProfileQuery,
      useSigninAdminMutation,
      useGetAllDepositsQuery,
      useGetDepositByIDQuery,

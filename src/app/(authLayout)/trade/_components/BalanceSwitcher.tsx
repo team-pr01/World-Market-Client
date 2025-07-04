@@ -87,8 +87,8 @@ export default function BalanceSwitcher({ demoBalance, mainBalance }: BalanceSwi
 
                {/* Dropdown */}
                {isOpen && (
-                    <div className="absolute top-full right-0 mt-2 bg-[#252833] border border-gray-700 rounded-lg shadow-lg z-50 min-w-[250px]">
-                         <div className="p-3 space-y-2">
+                    <div className="absolute top-full left-0 md-right-0 mt-2 bg-[#252833] z-1500 border border-gray-700 rounded-lg shadow-lg min-w-[250px]">
+                         <div className="p-3 space-y-2 relative">
                               {/* Live Account Option */}
                               <button
                                    onClick={() => choose("main")}

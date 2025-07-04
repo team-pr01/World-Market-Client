@@ -7,16 +7,13 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { useGetMeQuery } from "@/redux/Features/User/userApi";
 import BalanceSwitcher from "./BalanceSwitcher";
 import { User as UserType } from "@/type/user";
 
-const Header = () => {
+const Header = ( {user} : {user: UserType | null}) => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { data: profile } = useGetMeQuery({});
 
-  const user: UserType | null = profile?.user ?? null;
 
   const handleLogout = async () => {
     // Remove cookies

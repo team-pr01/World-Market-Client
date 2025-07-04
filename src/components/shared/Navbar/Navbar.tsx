@@ -13,7 +13,7 @@ const Navbar = () => {
     <header className="relative z-10 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         <div className="flex items-center justify-between">
-          <Image src={logo} alt="" className="w-56 md:w-72" />
+          <Image src={logo} alt="" className="w-44 sm:w-56 md:w-72" />
           {!user ? (
             <div className="flex items-center space-x-2 lg:space-x-4">
               <Link href="/signin">
