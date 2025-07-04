@@ -13,6 +13,7 @@ import { useCurrentUser } from "@/redux/Features/Auth/authSlice";
 // Define the shape of JWT payload
 interface JwtPayload {
   exp: number;
+  role?: string;
   [key: string]: any;
 }
 
@@ -28,11 +29,19 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
         const decoded: JwtPayload = jwtDecode(accessToken);
         const currentTime = Date.now() / 1000; // in seconds
         console.log("decoded.exp:", decoded.exp);
+        console.log("decoded.role:", decoded.role);
 
+        // Check if role is not 'user'
+        if (decoded.role !== "user") {
+          router.push("/signin");
+          return;
+        }
+
+        // Check if token expired
         if (decoded.exp < currentTime) {
-          // Token expired
           Cookies.remove("accessToken");
           router.push("/signin");
+          return;
         }
       } catch (err: any) {
         // Token is malformed or invalid

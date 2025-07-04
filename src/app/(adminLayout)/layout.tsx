@@ -1,53 +1,59 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import type { ReactNode } from "react";
-import { useGetAdminProfileQuery } from "@/redux/Features/Admin/adminApi";
+import { ReactNode, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
+// JWT payload shape
+interface JwtPayload {
+  exp: number;
+  role?: string;
+  [key: string]: any;
+}
 
 interface AdminLayoutProps {
-     children: ReactNode;
+  children: ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-     const router = useRouter();
-     const pathname = usePathname();
+  const router = useRouter();
 
-     // Define public admin routes that don't require authentication
-     const PUBLIC_ADMIN_ROUTES = ["/admin/login"];
+  useEffect(() => {
+    const accessToken = Cookies.get("accessToken");
 
-     const {
-          data,
-          isLoading: isLoadingAdminProfile,
-     } = useGetAdminProfileQuery(undefined, {
-          refetchOnMountOrArgChange: true,
-          refetchOnFocus: true,
-          refetchOnReconnect: true,
-     });
+    if (accessToken) {
+      try {
+        const decoded: JwtPayload = jwtDecode(accessToken);
+        const currentTime = Date.now() / 1000; // in seconds
+        // Check if role is not admin or not
+        if (decoded.role !== "admin") {
+          router.push("/admin/login");
+          return;
+        }
 
-     const adminProfile = data?.user;
+        // Check if token is expired
+        if (decoded.exp < currentTime) {
+          Cookies.remove("accessToken");
+          router.push("/admin/login");
+          return;
+        }
 
-     useEffect(() => {
-          // Skip protection logic for public routes like login
-          if (PUBLIC_ADMIN_ROUTES.includes(pathname)) return;
+      } catch (err: any) {
+        // Token is malformed or invalid
+        Cookies.remove("accessToken");
+        router.push("/admin/login");
+      }
+    } else {
+      router.push("/admin/login"); // No token at all
+    }
+  }, [router]);
 
-          if (!isLoadingAdminProfile && adminProfile?.role !== "admin") {
-               console.warn("Unauthorized access. Redirecting...");
-               router.replace("/");
-          }
-     }, [pathname,, isLoadingAdminProfile, adminProfile, router]);
-
-     if (PUBLIC_ADMIN_ROUTES.includes(pathname)) {
-          return <>{children}</>;
-     }
-
-     if (isLoadingAdminProfile) {
-          return <div className="p-4 text-center">Loading...</div>;
-     }
-
-     if (adminProfile?.role === "admin") {
-          return <>{children}</>;
-     }
-
-     return null;
+  return (
+    <Suspense fallback={<div className="text-white text-center py-10">Loading...</div>}>
+      {children}
+    </Suspense>
+  );
 }
